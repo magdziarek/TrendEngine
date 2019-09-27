@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link href="static/style.css" rel="stylesheet" type="text/css">
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"
+   integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+   crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"
+    integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="
+    crossorigin=""></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.2/leaflet.draw.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.2/leaflet.draw.js"></script>
+
+  <title>Trend Engine</title>
+</head>
+
+<body>
+  <h1>T r e n d   E n g i n e</h1>
+  <div class="grid-container">
+  <div id="left-col" class="grid-container-cell">
+    <!--Select algorithm name - grey out parameters for the other one -->
+    <p>Trend Engine is a tool for describing trends and changes in vegetation over time. It relies on Google Earth Engine 
+    for obtaining remote sensing time series data and the analysis is based on two available algorithms: PolyTrend and DBEST. The repository 
+    of this project can be found <a href="https://github.com/OlaMag/trend-engine">here</a>.</p>
+    <h2>Select algorithm</h2>
+    <h3>DBEST</h3>
+    <p>A program for analyzing vegetation time series, with two algorithms: 1) change detection algorithm that detects trend changes, determines their type (abrupt or non-abrupt), and estimates their timing, magnitude, number, and direction; 2) generalization algorithm that simplifies the temporal trend into main features. The user can set the number of major breakpoints or magnitude of greatest changes of interest for detection, and can control the generalization process by setting an additional parameter of generalization-percentage.</p>
+    <h3>PolyTrend</h3>
+    <p>PolyTrend classifies the trends into linear, quadratic, cubic, concealed and no-trend types. The "concealed trends" are those trends that possess quadratic or cubic forms, but the net change from the start of the time period to the end of the time period hasn't been significant. The "no-trend" category includes simple linear trends with statistically in-significant slope coefficient.</p>
+    <p><small>Source: https://CRAN.R-project.org/package=PolyTrend</small></p>
+    <h3>Datasets</h3>
+    <table>
+      <tr>
+        <th>Name</th>
+        <th>Available dates</th>
+        <th>Resolution</th>
+        <th>NDVI values range</th>
+      </tr>
+      <tr>
+        <td>GIMMS</td>
+        <td>Jul 1, 1981 - Dec 31, 2013</td>
+        <td>8 km</td>
+        <td>min: -1, max: 1</td>
+      </tr>
+      <tr>
+        <td>MODIS NDVI</td>
+        <td>Feb 18, 2000 - Present</td>
+        <td>250 m</td>
+        <td>min: -2 000, max: 10 000</td>
+      </tr>
+    </table>
+    <button id="dbestBtn" onclick="setDbest()">DBEST</button>
+    <button id="ptBtn" onclick="setPt()">PolyTrend</button>
+    <a href="{{ url_for('main.help') }}"><button>Help</button></a>
+    <form method="POST" action="{{ url_for('calculations.run_DBEST') }}">
+      {{ DBEST_form.hidden_tag() }}
+      <div id="dbestDiv" style="display: none;">
+        <table>
+          <tr>
+            <th>Threshold</th>
+            <th>Description</th>
+          </tr>
+          <tr>
+            <td>First level-shift-threshold</td>
+            <td>The lowest absolute difference in (VI) data between the level-shift point and next data point</td>
+          </tr>
+          <tr>
+            <td>Duration-threshold</td>
+            <td>The lowest time period (time steps) within which the shift in the mean of the data level, before and after the level-shift
+point, persists; and, the lowest spacing (time steps) between successive level-shift points.</td>
+          </tr>
+          <tr>
+            <td>Second level-shift-threshold</td>
+            <td>The lowest absolute difference in the means of the data calculated over the period φ before and after the level-shift point</td>
+          </tr>
+          <tr>
+            <td>Distance-threshold</td>
+            <td>The lowest perpendicular distance from farthest data point to the straight line passing through every pair of successive
+peak and valley points</td>
+          </tr>
+          <tr>
+            <td>Change number</td>
+            <td>Number of major breakpoints included in the generalised trend (generalisation algorithm); number of greatest changes
+of interest for detection (change detection algorithm)</td>
+          </tr>
+          <tr>
+            <td>Change magnitude</td>
+            <td>The largest variation within a segment after generalisation (generalisation algorithm); the lowest magnitude of changes
+of interest for detection (change detection algorithm)</td>
+          </tr>
+          <tr>
+            <td>Generalisation-threshold</td>
+            <td>The highest level of trend generalisation compared to the base level (the least simplified fit derived using all detected
+breakpoints in the fitting)</td>
+          </tr>
+          <tr>
+            <td>Statistical significance level</td>
+            <td>Statistical significance level used for testing significance of detected changes</td>
+          </tr>
+        </table>
+        <small>Source: Jamali, S., Jönsson, P., Eklundh, L., Ardö, J., Seaquist, J., 2015. Detecting changes in vegetation trends using time series segmentation. Remote Sens. Environ. 156, 182–195. https://doi.org/10.1016/j.rse.2014.09.010</small>
+        <h3>Select parameters for DBEST</h3>
+        <fieldset class="form-group">
+          <div class="form-group">
+            {{ DBEST_form.dataset_name.label(class="form-control-label") }}
+            {{ DBEST_form.dataset_name(class="form-control form-control-lg") }}
+          </div>
+          <div class="form-group">
+            {{ DBEST_form.user_dataset_name.label(class="form-control-label") }}
+            <br><small>GEE ID of an existing asset (currently unavailable)</small>
+            {{ DBEST_form.user_dataset_name(class="form-control form-control-lg") }}
+          </div>
+          <div class="form-group">
+            <span title='For MODIS no earlier than 2000-03-01, for GIMMS 1981-07-01'>
+            {{ DBEST_form.date_from.label(class="form-control-label") }}
+            {{ DBEST_form.date_from(class="form-control form-control-lg", placeholder="YYYY-MM-DD") }}
+            </span>
+          </div>
+          <div class="form-group">
+            {{ DBEST_form.date_to.label(class="form-control-label") }}
+            {{ DBEST_form.date_to(class="form-control form-control-lg", placeholder="YYYY-MM-DD") }}
+          </div>
+          <div class="form-group" id="coordinates">
+            {{ DBEST_form.coordinates.label(class="form-control-label") }}
+            {{ DBEST_form.coordinates(class="form-control form-control-lg", placeholder="[longitude, latitude]") }}
+          </div>
+          <div class="form-group">
+            {{ DBEST_form.save_ts_to_csv.label(class="form-control-label") }}
+            {{ DBEST_form.save_ts_to_csv(class="form-control form-control-lg") }}
+          </div>
+          <div class="form-group">
+            {{ DBEST_form.data_type.label(class="form-control-label") }}
+            {{ DBEST_form.data_type(class="form-control form-control-lg") }}
+          </div>
+          <div class="form-group">
+            {{ DBEST_form.algorithm.label(class="form-control-label") }}
+            {{ DBEST_form.algorithm(class="form-control form-control-lg") }}
+          </div>
+          <div class="form-group">
+            {{ DBEST_form.breakpoint_no.label(class="form-control-label") }}
+            {{ DBEST_form.breakpoint_no(class="form-control form-control-lg") }}
+          </div>
+          <div class="form-group">
+            {{ DBEST_form.seasonality.label(class="form-control-label") }}
+            {{ DBEST_form.seasonality(class="form-control form-control-lg") }}
+          </div>
+          <div class="form-group">
+            {{ DBEST_form.first_level_shift.label(class="form-control-label") }}
+            {{ DBEST_form.first_level_shift(class="form-control form-control-lg") }}
+          </div>
+          <div class="form-group">
+            {{ DBEST_form.second_level_shift.label(class="form-control-label") }}
+            {{ DBEST_form.second_level_shift(class="form-control form-control-lg") }}
+          </div>
+          <div class="form-group">
+            {{ DBEST_form.distance.label(class="form-control-label") }}
+            {{ DBEST_form.distance(class="form-control form-control-lg") }}
+          </div>
+          <div class="form-group">
+            {{ DBEST_form.duration.label(class="form-control-label") }}
+            {{ DBEST_form.duration(class="form-control form-control-lg") }}
+          </div>
+          <div class="form-group">
+            {{ DBEST_form.alpha.label(class="form-control-label") }}
+            {{ DBEST_form.alpha(class="form-control form-control-lg") }}
+          </div>
+          <div class="form-group">
+            {{ DBEST_form.save_result_to_csv.label(class="form-control-label") }}
+            {{ DBEST_form.save_result_to_csv(class="form-control form-control-lg") }}
+          </div>
+          <div class="form-group" style="display:inline;">
+            {{ DBEST_form.submit(class="btn btn-outline-info") }}
+          </div>
+        <input type="reset">
+        </div>
+      </fieldset>   
+    </form>
+
+        <!-- PolyTrend input -->
+    <form method="POST" action="{{ url_for('calculations.run_polytrend') }}">
+      <div id="ptDiv" style="display: none;">
+        {{ PolyTrend_form.hidden_tag() }}
+          <h3>Select parameters for PolyTrend</h3>
+          <fieldset class="form-group">
+          <div class="form-group">
+            {{ PolyTrend_form.dataset_name.label(class="form-control-label") }}
+            {{ PolyTrend_form.dataset_name(class="form-control form-control-lg") }}
+          </div>
+          <div class="form-group">
+            {{ PolyTrend_form.user_dataset_name.label(class="form-control-label") }}
+            {{ PolyTrend_form.user_dataset_name(class="form-control form-control-lg") }}
+            <small>GEE ID of an existing asset (currently unavailable)</small>
+          </div>
+          <div class="form-group">
+            <span title='For MODIS no earlier than 2000-03-01, for GIMMS 1981-07-01'>
+            {{ PolyTrend_form.date_from.label(class="form-control-label") }}
+            {{ PolyTrend_form.date_from(class="form-control form-control-lg", placeholder="YYYY-MM-DD") }}
+            </span>
+          </div>
+          <div class="form-group">
+            {{ PolyTrend_form.date_to.label(class="form-control-label") }}
+            {{ PolyTrend_form.date_to(class="form-control form-control-lg", placeholder="YYYY-MM-DD") }}
+          </div>
+          <div class="form-group" id="coordinates">
+            {{ PolyTrend_form.coordinates.label(class="form-control-label") }}
+            {{ PolyTrend_form.coordinates(class="form-control form-control-lg", placeholder="[longitude, latitude]") }}
+          </div>
+          <div class="form-group">
+            {{ DBEST_form.save_ts_to_csv.label(class="form-control-label") }}
+            {{ DBEST_form.save_ts_to_csv(class="form-control form-control-lg") }}
+          </div>
+          <div class="form-group">
+            {{ PolyTrend_form.alpha.label(class="form-control-label") }}
+            {{ PolyTrend_form.alpha(class="form-control form-control-lg") }}
+          </div>
+          <div class="form-group">
+            {{ DBEST_form.save_result_to_csv.label(class="form-control-label") }}
+            {{ DBEST_form.save_result_to_csv(class="form-control form-control-lg") }}
+          </div>
+        <div class="form-group" style="display:inline;">
+          {{ PolyTrend_form.submit(class="btn btn-outline-info") }}
+        </div>
+      <input type="reset">
+      </div>     
+      </fieldset>
+    </form>
+  </div>
+  <div id="right-col" class="grid-container-cell"> 
+    <h3>Check coordinates</h3>
+   <div id="map" style="width: 600px; height: 600px"> 
+   </div>
+   <h3>Coordinates</h3>
+   <p>Copy coordinates from underneath exactly in the format provided, <br>
+   e.g. for point [long, lat], for polygon [[[long, lat], [long, lat], [long, lat]]]</p>
+    <button onclick="copyCoords()">Copy</button>
+   <textarea id="coords" style="width:400px;height:150px"></textarea>
+ </div>
+ </body>
+ </html>
+
+<script>
+  /*
+  function setGimms(){
+    let gimmsDiv = document.getElementById('gimmsDiv');
+    modisDiv.style.display = 'none';
+    gimmsDiv.style.display = '';
+  }
+  function setModis(){
+    let modisDiv = document.getElementById('modisDiv');
+    gimmsDiv.style.display = 'none';
+    modisDiv.style.display = '';
+  }
+  */
+  var coordinates = document.getElementById('coords');
+
+  function setDbest(){
+    let dbestDiv = document.getElementById('dbestDiv');
+    ptDiv.style.display = 'none';
+    dbestDiv.style.display = '';
+  }
+  function setPt(){
+    let ptDiv = document.getElementById('ptDiv');
+    dbestDiv.style.display = 'none';
+    ptDiv.style.display = '';
+  }
+  function copyCoords(){
+    coordinates.select();
+    document.execCommand("copy");
+  }
+
+  ///////////////// MAKE A MAP WITH DRAW CONTROL FOR MARKING AREA OF INTEREST ////////////////////////////
+  var map = document.getElementById('map'),
+    leafletMap = L.map(map).setView([52.410021807429814, 18.620109558105472], 10);
+    // czerlonka [23.721885681152347,52.69205388054723]
+    // tomislawice [52.410021807429814, 18.620109558105472]
+
+  //0.45043945312500006,10.151304278092596
+  var mapLink = 
+  '<a href="http://openstreetmap.org">OpenStreetMap</a>';
+  L.tileLayer(
+  'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', 
+  {
+    attribution: '&copy; ' + mapLink + ' Contributors',
+    maxZoom: 15,
+    minZoom: 6
+    }
+  ).addTo(leafletMap);
+  //add map controls
+  var drawnItems;
+  L.control.scale().addTo(leafletMap);
+  //add drawing utilities, only marker and polygon can be drawn
+  var drawnItems = new L.FeatureGroup();
+  leafletMap.addLayer(drawnItems);
+  var drawControl = new L.Control.Draw({draw: {
+    polyline: false,
+    polygon: false,
+    rectangle: true,
+    circle: false,
+    marker: true
+  },
+  edit:{
+    featureGroup: drawnItems
+  }
+  });
+  leafletMap.addControl(drawControl);
+  //when a marker is drawn, display its coordinates
+  leafletMap.on(L.Draw.Event.CREATED, function (e) {
+    let type = e.layerType,
+      layer = e.layer;
+    if (type === 'marker'){
+      drawnItems.addLayer(layer);
+      let latLng = layer.getLatLng();
+      coordinates.innerHTML = '[' + latLng.lng + ',' + latLng.lat + ']';
+    }
+    if (type === 'rectangle'){
+      drawnItems.addLayer(layer);
+      let latLng = layer.getLatLngs()[0];
+      coordinates.innerHTML = '[[['+latLng[0].lng +','+ latLng[0].lat + '],[' + latLng[1].lng+ ',' + latLng[1].lat + '],[' + 
+        latLng[2].lng + ', ' + latLng[2].lat + '], [' + latLng[3].lng + ', ' + latLng[3].lat + ']]]';
+    }
+  });  
+</script>

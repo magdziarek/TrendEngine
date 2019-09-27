@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link href="static/style.css" rel="stylesheet" type="text/css">
+  <!-- Bokeh related content -->
+  <link href="http://cdn.pydata.org/bokeh/dev/bokeh-1.3.0.min.css" rel="stylesheet" type="text/css">
+	<script src="http://cdn.pydata.org/bokeh/release/bokeh-1.3.0.min.js"></script>
+    <title>Trend Engine</title>
+  </head>
+  <body>
+    <h1>PolyTrend output</h1>
+    <div class="describe-results result-cell">
+    {% if is_point %}
+      <p>Slope: {{ result.slope }}</p>
+      <p>Trend type: {{ result.trend }}</p>
+      <p>Direction: {{ result.direction }}</p>
+      <p>Significance: {{ result.significance }}</p>
+      {{ div|safe}}
+      {{ script|safe}}
+      {% else %}
+      {{ div|safe}}
+      {{ script|safe}}
+      <div class="grid-container">
+      <div class="grid-container-cell">
+        <h2>Trend type legend</h2>
+        <div class="square" style="background-color: grey;"></div>Concealed
+        <div class="square" style="background-color: yellow;"></div>No trend
+        <div class="square" style="background-color: green;"></div>Linear
+        <div class="square" style="background-color: blue;"></div>Quadratic
+        <div class="square" style="background-color: red;"></div>Cubic
+      </div>
+      <div class="grid-container-cell">
+        <h2>Direction legend</h2>
+        <div class="square" style="background-color: yellow;"></div>Negative
+        <div class="square" style="background-color: green;"></div>Positive
+      </div>
+    </div>
+      {{ pt_map|safe }}
+    {% endif %}
+      <button onclick="history.go(-1)">Back</button>
+    </div>
+  </body>
+</html>

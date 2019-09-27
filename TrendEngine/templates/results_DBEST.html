@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="static/style.css" rel="stylesheet" type="text/css">
+    <!-- Bokeh related content -->
+    <link href="http://cdn.pydata.org/bokeh/dev/bokeh-1.2.0.min.css" rel="stylesheet" type="text/css">
+    <script src="http://cdn.pydata.org/bokeh/dev/bokeh-1.2.0.min.js"></script>
+	<script src="http://cdn.pydata.org/bokeh/release/bokeh-1.2.0.min.js"></script>
+    <title>Trend Engine</title>
+  </head>
+  <body>
+  <body>
+    <h1>DBEST output</h1>
+    <div class="describe-results result-cell">
+    {% if is_point %}
+      {% if generalization %}
+        <p>Number of segments: {{ result.segment_no }}</p>
+        <p>RMSE: {{ result.RMSE }}</p>
+        <p>MAD: {{ result.MAD }}</p>
+      {% endif %}
+      {% if change_detection %}
+      <p>Largest change occured approximately in {{ result.first_change }}  </p>
+        <p>Number of breakpoints: {{ result.breakpoint_no }}</p>
+        <p>Number of segments: {{ result.segment_no }}</p>
+        <p>Change type: {{ result.change_type }}</p>
+        <p>Change: {{ result.change }}</p>
+        <p>Significance: {{ result.significance }}</p>
+        <p>Start: {{ result.start }}</p>
+        <p>End: {{ result.end }}</p>
+      {% endif %}
+        {{ script|safe }}
+        {{ div|safe }}
+    {% else %}
+      {{ generalization }}
+      <h2>Map of change</h2>
+        {{ dbest_maps|safe }}
+        {{ script|safe }}
+        {{ div|safe }}
+    {% endif %}
+    <button onclick="history.go(-1)">Back</button>
+  </div>
+</body>
+</html>
