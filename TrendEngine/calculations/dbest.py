@@ -29,12 +29,19 @@ except ImportError:
         )
 ee.Initialize()
 
-def calculate_dbest_for_polygon(dataset, data_type, seasonality, algorithm, breakpoints_no, 
+def call_dbest_polygon(dataset, data_type, seasonality, algorithm, breakpoints_no, 
             first_level_shift, second_level_shift, duration, distance_threshold, 
-            alpha, n, number_of_pixels):
+            alpha, n, number_of_pixels, band_name, ndvi_threshold):
     """ For polygons splits the image into pixels and runs DBEST
         separately on each pixel time series list of values
     """
+    dbest = importr('DBEST', robject_translations = {
+        "data.type": "data_type", 
+        "breakpoints.no": "breakpoints_no", 
+        "first.level.shift": "first_level_shift", 
+        "second.level.shift":"second_level_shift", 
+        "distance.threshold": "distance_threshold"
+        })
     DBEST_result = []
     if (data_type == 'non-cyclical'):
         pass
@@ -46,40 +53,41 @@ def calculate_dbest_for_polygon(dataset, data_type, seasonality, algorithm, brea
             Y = [round(x, 3) for x in Y_long]
             if (all(val > ndvi_threshold for val in Y)):
                 vec =  FloatVector(Y)
-                try:
-                    result = list(dbest.DBEST(
-                        data=vec, 
-                        data_type=data_type, 
-                        seasonality=seasonality, 
-                        algorithm=algorithm, 
-                        breakpoints_no=breakpoints_no, 
-                        first_level_shift=first_level_shift, 
-                        second_level_shift=second_level_shift, 
-                        duration=duration, 
-                        distance_threshold=distance_threshold, 
-                        alpha=alpha
-                        ))
-                    #populate the empty PT_result list with values    
-                    pixel_long = dataset.at[i, 'longitude']
-                    pixel_lat = dataset.at[i, 'latitude']
-                    geometry = [round(pixel_long, 4), round(pixel_lat, 4)]
-                    DBEST_result.append([geometry, int(result[2][0]), int(result[3][0]), int(result[4][0]), 
-                        float(result[5][0]), int(result[6][0]), result[7][0]]) 
-                except:
-                    return render_template('error.html')
-                    print('Error comes from R')    
+                result = list(dbest.DBEST(
+                    data=vec, 
+                    data_type=data_type, 
+                    seasonality=seasonality, 
+                    algorithm=algorithm, 
+                    breakpoints_no=breakpoints_no, 
+                    first_level_shift=first_level_shift, 
+                    second_level_shift=second_level_shift, 
+                    duration=duration, 
+                    distance_threshold=distance_threshold, 
+                    alpha=alpha
+                    ))
+                #populate the empty PT_result list with values    
+                pixel_long = dataset.at[i, 'longitude']
+                pixel_lat = dataset.at[i, 'latitude']
+                geometry = [round(pixel_long, 4), round(pixel_lat, 4)]
+                DBEST_result.append([geometry, int(result[2][0]), int(result[3][0]), int(result[4][0]), 
+                    float(result[5][0]), int(result[6][0]), result[7][0]]) 
             else:
                 print('!!!!!!!!!!!!!!! Unqualified value !!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-                                
+                         
         df = pd.DataFrame(DBEST_result[0:], columns=DBEST_result_header)
-        if df.empty:
-            print('!!!!!!!!!!!!!! Too many unqualified values !!!!!!!!!!!!!!')
-            exit()
     return df
 
-def calculate_dbest_for_point(dataset, data_type, seasonality, algorithm, breakpoints_no, first_level_shift, 
-            second_level_shift, duration, distance_threshold,alpha):
-    # get only NDVI values for pixel
+def call_dbest_point(dataset, data_type, seasonality, algorithm, breakpoints_no, first_level_shift, 
+            second_level_shift, duration, distance_threshold, alpha, band_name, ndvi_threshold):
+    """ For point runs DBEST on a pixel's time series """
+            
+    dbest = importr('DBEST', robject_translations = {
+        "data.type": "data_type", 
+        "breakpoints.no": "breakpoints_no", 
+        "first.level.shift": "first_level_shift", 
+        "second.level.shift":"second_level_shift", 
+        "distance.threshold": "distance_threshold"
+        })
     Y = dataset[band_name].values
     print(Y)
     if (all(val > ndvi_threshold for val in Y)): 
@@ -99,10 +107,10 @@ def calculate_dbest_for_point(dataset, data_type, seasonality, algorithm, breakp
         df = pd.DataFrame(dbest_result)
     else:
         print('!!!!!!!!!!!!!!!!! Values below threshold !!!!!!!!!!!!!!!!!!!!!')
-        exit()
+
     return df
 
-def dbest_visualize_polygon(result, algorithm):
+def dbest_visualize_polygon(result, algorithm, data_type):
     """ Create maps for polygons
 
     Args:
@@ -122,11 +130,7 @@ def dbest_visualize_polygon(result, algorithm):
         gpd_df.crs = {'init' :'epsg:4326'}
         pointA = result["geometry"][0]
         pointB = result["geometry"][1]
-        print(' pt A', pointA)
-        print('pt B ', pointB)
         buffer_size = pointA.distance(pointB)/2
-        print('buffer is ', buffer_size)
-        print('pointA is ', pointA)
         gpd_df.geometry = gpd_df.geometry.buffer(buffer_size).envelope
         mapper = LinearColorMapper(palette=palette)
         colormap = ['grey', 'yellow']
@@ -184,11 +188,11 @@ def dbest_visualize_polygon(result, algorithm):
         change_detection = change_detection,
         dbest_maps=plot_grid, 
         result=result_to_display, 
-        is_point=is_point, 
+        is_point=False, 
         script=script, 
         div=div)
 
-def dbest_visualize_point(result, time_steps, algorithm):
+def dbest_visualize_point(result, time_steps, algorithm, data_type):
     """ Create plots for points depending on the algorithm passed:
         for 'generalization': generalized trend and f-local-change
         for 'change detection': data, trend, seasonal, remainder
@@ -340,7 +344,7 @@ def dbest_visualize_point(result, time_steps, algorithm):
         change_detection = change_detection,
         dbest_maps=plot_grid, 
         result=result_to_display, 
-        is_point=is_point, 
+        is_point=True, 
         script=script, 
         div=div)
 
@@ -362,7 +366,6 @@ def dbest_func(parameters):
 
     """
     #getting data parameters
-    print('!!! works! ')
     name_of_collection = parameters['dataset_name']
     if (name_of_collection == 'NASA/GIMMS/3GV0'):
         band_name = 'ndvi'
@@ -450,7 +453,11 @@ def dbest_func(parameters):
 
         monthly_NDVI_list = list_of_years_and_collections.map(calculate_monthly_mean_for_years).flatten()
         monthly_NDVI = ee.ImageCollection.fromImages(monthly_NDVI_list)
-        dataset = get_dataset_for_polygon(is_polytrend, monthly_NDVI, aoi, scale, crs)
+        try:
+            dataset = get_dataset_for_polygon(is_polytrend, monthly_NDVI, aoi, scale, crs)
+        except:
+            message = "Sorry, couldn't get the data you requested. Possible problems: the dataset is too large (study area too large), study period is too long or the dataset for this period does not exist."
+            return render_template("error.html", error_message=message) 
         number_of_pixels = len(dataset) 
         print(number_of_pixels)
         list_of_images = dataset['id']
@@ -461,20 +468,16 @@ def dbest_func(parameters):
         n = len(ids_of_images)
         if (save_ts_to_csv):
             dataset.to_csv('time_series.csv')
-
-        dbest = importr('DBEST', robject_translations = {
-            "data.type": "data_type", 
-            "breakpoints.no": "breakpoints_no", 
-            "first.level.shift": "first_level_shift", 
-            "second.level.shift":"second_level_shift", 
-            "distance.threshold": "distance_threshold"
-            })
-
-        result = calculate_dbest_for_polygon(dataset, data_type, seasonality, algorithm, breakpoints_no, 
-            first_level_shift, second_level_shift, duration, distance_threshold, alpha, n, number_of_pixels)
+        try:
+            result = call_dbest_polygon(dataset, data_type, seasonality, algorithm, breakpoints_no, 
+                first_level_shift, second_level_shift, duration, distance_threshold, alpha, n, 
+                number_of_pixels, band_name, ndvi_threshold)
+        except:
+            message = 'Sorry, something went wrong inside DBEST function.'
+            return render_template("error.html", error_message=message)
         if (save_result_to_csv):
             result.to_csv('DBEST_result.csv')
-        plot = dbest_visualize_polygon(result, algorithm)
+        plots = dbest_visualize_polygon(result, algorithm, data_type)
 
     elif (is_point):
 
@@ -510,25 +513,27 @@ def dbest_func(parameters):
         monthly_NDVI_list = list_of_years_and_collections.map(calculate_monthly_mean_for_years).flatten()
         monthly_NDVI = ee.ImageCollection.fromImages(monthly_NDVI_list)
         print('size of annual',monthly_NDVI.size().getInfo())
-        dataset = get_dataset_for_polygon(is_polytrend, monthly_NDVI, aoi, scale, crs)
+        try:
+            dataset = get_dataset_for_polygon(is_polytrend, monthly_NDVI, aoi, scale, crs)
+        except:
+            message = "Sorry, couldn't get the data you requested. Possible problems: the dataset is too large (study area too large), study period is too long or the dataset for this period does not exist."
+            return render_template("error.html", error_message=message) 
         number_of_pixels = len(dataset) 
         print(number_of_pixels)
-        
-        dbest = importr('DBEST', robject_translations = {
-            "data.type": "data_type", 
-            "breakpoints.no": "breakpoints_no", 
-            "first.level.shift": "first_level_shift", 
-            "second.level.shift":"second_level_shift", 
-            "distance.threshold": "distance_threshold"
-            })
 
         time_steps = dataset['time']
-        result = calculate_dbest_for_point(dataset, data_type, seasonality, algorithm, 
-            breakpoints_no, first_level_shift, second_level_shift, duration, 
-            distance_threshold, alpha)
+        try:
+            result = call_dbest_point(dataset, data_type, seasonality, algorithm, 
+                breakpoints_no, first_level_shift, second_level_shift, duration, 
+                distance_threshold, alpha, band_name, ndvi_threshold)
+        except:
+            message = 'Sorry, something went wrong inside DBEST function.'
+            return render_template("error.html", error_message=message)
+            
         if (save_result_to_csv):
             result.to_csv('DBEST_result.csv')
-        plots = dbest_visualize_point(result, time_steps, algorithm)
+
+        plots = dbest_visualize_point(result, time_steps, algorithm, data_type)
 
     return plots
 
