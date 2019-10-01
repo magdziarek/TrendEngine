@@ -1,15 +1,11 @@
-<!DOCTYPE html>
-<html>
-  <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link href="static/style.css" rel="stylesheet" type="text/css">
+{% extends 'base.html'  %}
+{% block header %}
   <!-- Bokeh related content -->
   <link href="http://cdn.pydata.org/bokeh/dev/bokeh-1.3.0.min.css" rel="stylesheet" type="text/css">
 	<script src="http://cdn.pydata.org/bokeh/release/bokeh-1.3.0.min.js"></script>
-    <title>Trend Engine</title>
-  </head>
-  <body>
+{% endblock %}
+
+{% block content %}
     <h1>PolyTrend output</h1>
     <div class="describe-results result-cell">
     {% if is_point %}
@@ -41,5 +37,4 @@
     {% endif %}
       <button onclick="history.go(-1)">Back</button>
     </div>
-  </body>
-</html>
+{% endblock %}
