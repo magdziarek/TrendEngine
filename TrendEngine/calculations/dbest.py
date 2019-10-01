@@ -34,7 +34,6 @@ def calculate_dbest_for_polygon(dataset, data_type, seasonality, algorithm, brea
             alpha, n, number_of_pixels):
     """ For polygons splits the image into pixels and runs DBEST
         separately on each pixel time series list of values
-        For pixels runs the DBEST package on time series list
     """
     DBEST_result = []
     if (data_type == 'non-cyclical'):
@@ -363,6 +362,7 @@ def dbest_func(parameters):
 
     """
     #getting data parameters
+    print('!!! works! ')
     name_of_collection = parameters['dataset_name']
     if (name_of_collection == 'NASA/GIMMS/3GV0'):
         band_name = 'ndvi'
@@ -523,9 +523,9 @@ def dbest_func(parameters):
             })
 
         time_steps = dataset['time']
-        result = calculate_dbest_for_polygon(dataset, data_type, seasonality, algorithm, 
+        result = calculate_dbest_for_point(dataset, data_type, seasonality, algorithm, 
             breakpoints_no, first_level_shift, second_level_shift, duration, 
-            distance_threshold,alpha)
+            distance_threshold, alpha)
         if (save_result_to_csv):
             result.to_csv('DBEST_result.csv')
         plots = dbest_visualize_point(result, time_steps, algorithm)
