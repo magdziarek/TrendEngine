@@ -118,7 +118,6 @@ def visualize_polytrend_polygon(result):
     pointB = result["geometry"][1]
     buffer_size = pointA.distance(pointB)/2
     gpd_df.geometry = gpd_df.geometry.buffer(buffer_size).envelope
-    gpd_df.to_csv('geopandas_polytrend.csv')
     colormap_trend = ['grey', 'yellow', 'green', 'blue', 'red']
     trend_map = gpd_df.plot_bokeh(
         category='trend_type', 
@@ -163,16 +162,16 @@ def visualize_polytrend_polygon(result):
         pt_map=plot_grid, 
         script=script, 
         div=div, 
-        is_point=is_point
+        is_point=False
         )
 
-def visualize_polytrend_point(result, dataset_name, start_year):
+def visualize_polytrend_point(result, name_of_collection, start_year):
     """ Create a time series plot with regression line fitted
 
     Args:
         result: list 
             contains what comes out of PolyTrend R package 
-        dataset_name: string
+        name_of_collection: string
             ID of dataset in Google Earth Engine entered by user the form in home.html
         start_year: int
             year from which image collection starts
@@ -182,7 +181,7 @@ def visualize_polytrend_point(result, dataset_name, start_year):
 
     """
     #### create a plot for a point ####
-    if (dataset_name == "NASA/GIMMS/3GV0"):
+    if (name_of_collection == "NASA/GIMMS/3GV0"):
         y_axis_range = (0, 1)
     else:
         y_axis_range = (-2000, 10000)
@@ -197,8 +196,6 @@ def visualize_polytrend_point(result, dataset_name, start_year):
         'direction': direction_dict[direction_index], 
         'significance': result['significance'][0]}
 
-    start_year = int(start_year.split('-')[0])
-    # end_year = int(parameters["date_to"].split('-')[0])
     y = result['ts'][0] 
     no_of_years_valid = len(y)
     end_year = start_year + no_of_years_valid
@@ -227,10 +224,10 @@ def visualize_polytrend_point(result, dataset_name, start_year):
         pt_map=plot_grid, 
         script=script, 
         div=div, 
-        is_point=is_point
+        is_point=True
         )
 
-def call_polytrend_R_for_polygon(dataset, alpha):
+def call_polytrend_polygon(dataset, alpha, n, number_of_pixels, band_name, ndvi_threshold):
     """ Splits the dataframe representing whole image into pixels
         Calls PolyTrend R package on time series of each pixel
 
@@ -246,6 +243,7 @@ def call_polytrend_R_for_polygon(dataset, alpha):
             geographic coordinates, trend type, linear trend slope, direction of change, significance
 
     """
+    PT = importr('PolyTrend')  
     PT_result = []
     #split the dataset into pixel time series
     for i in range(0, number_of_pixels, n):
@@ -267,7 +265,7 @@ def call_polytrend_R_for_polygon(dataset, alpha):
     reduced_dataset = pd.DataFrame(PT_result[0:], columns=PT_result_header)
     return reduced_dataset
 
-def call_polytrend_R_for_point(dataset, alpha):
+def call_polytrend_point(dataset, alpha, band_name, ndvi_threshold):
     """ Calls PolyTrend R package on a single geographical point
     
     Args:
@@ -282,6 +280,7 @@ def call_polytrend_R_for_point(dataset, alpha):
             geographic coordinates, trend type, linear trend slope, direction of change, significance
 
     """
+    PT = importr('PolyTrend')  
     PT_result = []
     Y = dataset[band_name].values
     #check if Y qualifies
@@ -322,7 +321,6 @@ def polytrend_func(parameters):
             and for polygon (3 maps and descriptive statistics)
 
     """
-    PT = importr('PolyTrend')  
     name_of_collection = parameters['dataset_name']
     if (name_of_collection == 'NASA/GIMMS/3GV0'):
         band_name = 'ndvi'
@@ -385,7 +383,11 @@ def polytrend_func(parameters):
     annualNdvi = ee.ImageCollection.fromImages(list_of_years_and_collections.map(calculateAnnualMean))
 
     if (is_polygon):
-        dataset = get_dataset_for_polygon(is_polytrend, annualNdvi, aoi, scale, crs)
+        try:
+            dataset = get_dataset_for_polygon(is_polytrend, annualNdvi, aoi, scale, crs)
+        except:
+            message = "Sorry, couldn't get the data you requested. Possible problems: the dataset is too large (study area too large), study period is too long or the dataset for this period does not exist."
+            return render_template("error.html", error_message=message)
         if (save_ts_to_csv):
             dataset.to_csv('time_series.csv')
         #establish how many images there are in the collection
@@ -399,18 +401,30 @@ def polytrend_func(parameters):
         print('number of images: ', n)
         number_of_pixels = len(dataset) 
         print('number of pixels analysed: ', number_of_pixels)
-        result = call_polytrend_R_for_polygon(dataset, alpha)
+        try:
+            result = call_polytrend_polygon(dataset, alpha, n, number_of_pixels, band_name, ndvi_threshold)
+        except:
+            message = "Sorry, something went wrong inside the PolyTrend function."
+            return render_template("error.html", error_message=message)
         if (save_result_to_csv):
             result.to_csv('PolyTrend_result.csv')
         plots = visualize_polytrend_polygon(result)
  
     elif (is_point):
-        if (save_ts_to_csv):
-            dataset.to_csv('time_series.csv')
-        dataset = get_dataset_for_point(is_polytrend, annualNdvi, aoi, scale, crs)
+        try:
+            dataset = get_dataset_for_point(is_polytrend, annualNdvi, aoi, scale, crs)
+        except:
+            message = "Sorry, couldn't get the data you requested. Possible problems: the dataset is too large (study area too large), study period is too long or the dataset for this period does not exist."
+            return render_template("error.html", error_message=message)
         number_of_pixels = len(dataset) 
-        print(number_of_pixels)      
-        result = call_polytrend_R_for_point(dataset, alpha)
-        plots = visualize_polytrend_polygon(result, dataset_name, start_year)
+        print(number_of_pixels)
+        if (save_ts_to_csv):
+            dataset.to_csv('time_series.csv')  
+        try:    
+            result = call_polytrend_point(dataset, alpha, band_name, ndvi_threshold)
+        except:
+            message = "Sorry, something went wrong inside the PolyTrend function."
+            return render_template("error.html", error_message=message)
+        plots = visualize_polytrend_point(result, name_of_collection, start_year)
 
     return plots
