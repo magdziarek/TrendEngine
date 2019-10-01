@@ -3,14 +3,6 @@ from wtforms import StringField, SubmitField, SelectField, DateField, IntegerFie
 from wtforms.validators import DataRequired
 
 
-# def validate_dataset(dataset):
-# 	def _validate_dataset(form, field):
-# 		date = field.data
-# 		if date == '2000-01-01':
-# 			print('!!!!!!!!!!!!!!!!!!!! ', dataset)
-# 			raise ValidationError('Wrong date! See dates available for your dataset.')
-# 		return _validate_dataset
-
 class DbestParametersForm(FlaskForm):
 	#selecting time series
 	dataset_name = SelectField('Dataset', choices=[("NASA/GIMMS/3GV0", "GIMMS 8000m"), ("MODIS/006/MOD13Q1_NDVI", "MODIS NDVI 250 m"), 
@@ -30,8 +22,8 @@ class DbestParametersForm(FlaskForm):
 	duration = IntegerField('Duration', default=24)
 	alpha = DecimalField('Alpha', rounding=None, places=2, default=0.05)
 
-	save_ts_to_csv = SelectField('Save time series to file (time_series.csv)', choices=[(False, 'No'), (True, 'Yes')])
-	save_result_to_csv = SelectField('Save result to file (DBEST_result.csv)', choices=[(False, 'No'), (True, 'Yes')])
+	save_ts_to_csv = SelectField('Save time series to file (time_series.csv)', choices=[(False, 'No'), (True, 'Yes')], default=False)
+	save_result_to_csv = SelectField('Save result to file (DBEST_result.csv)', choices=[(False, 'No'), (True, 'Yes')], default=False)
 
 	submit = SubmitField('Submit')
 
@@ -47,8 +39,8 @@ class PolyTrendParametersForm(FlaskForm):
 	#PolyTrend parameters
 	alpha = DecimalField('Alpha', rounding=None, places=2, default=0.05)
 
-	save_ts_to_csv = SelectField('Save time series to file (time_series.csv)', choices=[(False, 'No'), (True, 'Yes')])
-	save_result_to_csv = SelectField('Save result to file PolyTrend_result.csv', choices=[(False, 'No'), (True, 'Yes')])
+	save_ts_to_csv = SelectField('Save time series to file (time_series.csv)', choices=[(False, 'No'), (True, 'Yes')], default=False)
+	save_result_to_csv = SelectField('Save result to file PolyTrend_result.csv', choices=[(False, 'No'), (True, 'Yes')], default=False)
 
 	submit = SubmitField('Submit')
 
