@@ -4,16 +4,9 @@ import ee
 import pandas as pd
 
 def get_dataset_for_polygon(is_polytrend, collection, AOI, scale, crs):
-    # try:
     geom_values = collection.getRegion(geometry=AOI, scale=scale, crs=crs)
-    # except TypeError:
-    #     print('there is nothing for your selected dates')
-    #     return render_template('error.html')
-    # try:
     geom_values_list = ee.List(geom_values).getInfo()
-    # except:
-    #     print('Error from GEE')
-    #     return render_template('error.html')
+
     # Convert to a Pandas DataFrame.
     header = geom_values_list[0]
     data = pd.DataFrame(geom_values_list[1:], columns=header)
@@ -27,17 +20,8 @@ def get_dataset_for_polygon(is_polytrend, collection, AOI, scale, crs):
     return data
 
 def get_dataset_for_point(is_polytrend, collection, AOI, scale, crs):
-    # try:
     geom_values = collection.getRegion(geometry=AOI, scale=scale, crs=crs)
-    # except TypeError:
-    #     print('there is nothing for your selected dates')
-    #     return render_template('error.html')
-    # try:
     geom_values_list = ee.List(geom_values).getInfo()
-    # except:
-    #     print('Error from GEE')
-    #     return render_template('error.html')
-    # Convert to a Pandas DataFrame.
     header = geom_values_list[0]
     data = pd.DataFrame(geom_values_list[1:], columns=header)
     if (is_polytrend): 
