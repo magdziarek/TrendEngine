@@ -39,130 +39,7 @@
     <button id="ptBtn" onclick="setPt()">PolyTrend</button>
     <a href="{{ url_for('main.help') }}"><button>Help</button></a>
     <form method="POST" action="{{ url_for('calculations.run_DBEST') }}">
-      <!-- 
-      {{ DBEST_form.hidden_tag() }}
-      <div id="dbestDiv" style="display: none;">
-        <table>
-          <tr>
-            <th>Threshold</th>
-            <th>Description</th>
-          </tr>
-          <tr>
-            <td>First level-shift-threshold</td>
-            <td>The lowest absolute difference in (VI) data between the level-shift point and next data point</td>
-          </tr>
-          <tr>
-            <td>Duration-threshold</td>
-            <td>The lowest time period (time steps) within which the shift in the mean of the data level, before and after the level-shift
-point, persists; and, the lowest spacing (time steps) between successive level-shift points.</td>
-          </tr>
-          <tr>
-            <td>Second level-shift-threshold</td>
-            <td>The lowest absolute difference in the means of the data calculated over the period φ before and after the level-shift point</td>
-          </tr>
-          <tr>
-            <td>Distance-threshold</td>
-            <td>The lowest perpendicular distance from farthest data point to the straight line passing through every pair of successive
-peak and valley points</td>
-          </tr>
-          <tr>
-            <td>Change number</td>
-            <td>Number of major breakpoints included in the generalised trend (generalisation algorithm); number of greatest changes
-of interest for detection (change detection algorithm)</td>
-          </tr>
-          <tr>
-            <td>Change magnitude</td>
-            <td>The largest variation within a segment after generalisation (generalisation algorithm); the lowest magnitude of changes
-of interest for detection (change detection algorithm)</td>
-          </tr>
-          <tr>
-            <td>Generalisation-threshold</td>
-            <td>The highest level of trend generalisation compared to the base level (the least simplified fit derived using all detected
-breakpoints in the fitting)</td>
-          </tr>
-          <tr>
-            <td>Statistical significance level</td>
-            <td>Statistical significance level used for testing significance of detected changes</td>
-          </tr>
-        </table>
-        <small>Source: Jamali, S., Jönsson, P., Eklundh, L., Ardö, J., Seaquist, J., 2015. Detecting changes in vegetation trends using time series segmentation. Remote Sens. Environ. 156, 182–195. https://doi.org/10.1016/j.rse.2014.09.010</small>
-        <h3>Select parameters for DBEST</h3>
-        <fieldset class="form-group">
-          <div class="form-group">
-            {{ DBEST_form.dataset_name.label(class="form-control-label") }}
-            {{ DBEST_form.dataset_name(class="form-control form-control-lg") }}
-          </div>
-          <div class="form-group">
-            {{ DBEST_form.user_dataset_name.label(class="form-control-label") }}
-            <br><small>GEE ID of an existing asset (currently unavailable)</small>
-            {{ DBEST_form.user_dataset_name(class="form-control form-control-lg") }}
-          </div>
-          <div class="form-group">
-            <span title='For MODIS no earlier than 2000-03-01, for GIMMS 1981-07-01'>
-            {{ DBEST_form.date_from.label(class="form-control-label") }}
-            {{ DBEST_form.date_from(class="form-control form-control-lg", placeholder="YYYY-MM-DD") }}
-            </span>
-          </div>
-          <div class="form-group">
-            {{ DBEST_form.date_to.label(class="form-control-label") }}
-            {{ DBEST_form.date_to(class="form-control form-control-lg", placeholder="YYYY-MM-DD") }}
-          </div>
-          <div class="form-group" id="coordinates">
-            {{ DBEST_form.coordinates.label(class="form-control-label") }}
-            {{ DBEST_form.coordinates(class="form-control form-control-lg", placeholder="[longitude, latitude]") }}
-          </div>
-          <div class="form-group">
-            {{ DBEST_form.save_ts_to_csv.label(class="form-control-label") }}
-            {{ DBEST_form.save_ts_to_csv(class="form-control form-control-lg") }}
-          </div>
-          <div class="form-group">
-            {{ DBEST_form.data_type.label(class="form-control-label") }}
-            {{ DBEST_form.data_type(class="form-control form-control-lg") }}
-          </div>
-          <div class="form-group">
-            {{ DBEST_form.algorithm.label(class="form-control-label") }}
-            {{ DBEST_form.algorithm(class="form-control form-control-lg") }}
-          </div>
-          <div class="form-group">
-            {{ DBEST_form.breakpoint_no.label(class="form-control-label") }}
-            {{ DBEST_form.breakpoint_no(class="form-control form-control-lg") }}
-          </div>
-          <div class="form-group">
-            {{ DBEST_form.seasonality.label(class="form-control-label") }}
-            {{ DBEST_form.seasonality(class="form-control form-control-lg") }}
-          </div>
-          <div class="form-group">
-            {{ DBEST_form.first_level_shift.label(class="form-control-label") }}
-            {{ DBEST_form.first_level_shift(class="form-control form-control-lg") }}
-          </div>
-          <div class="form-group">
-            {{ DBEST_form.second_level_shift.label(class="form-control-label") }}
-            {{ DBEST_form.second_level_shift(class="form-control form-control-lg") }}
-          </div>
-          <div class="form-group">
-            {{ DBEST_form.distance.label(class="form-control-label") }}
-            {{ DBEST_form.distance(class="form-control form-control-lg") }}
-          </div>
-          <div class="form-group">
-            {{ DBEST_form.duration.label(class="form-control-label") }}
-            {{ DBEST_form.duration(class="form-control form-control-lg") }}
-          </div>
-          <div class="form-group">
-            {{ DBEST_form.alpha.label(class="form-control-label") }}
-            {{ DBEST_form.alpha(class="form-control form-control-lg") }}
-          </div>
-          <div class="form-group">
-            {{ DBEST_form.save_result_to_csv.label(class="form-control-label") }}
-            {{ DBEST_form.save_result_to_csv(class="form-control form-control-lg") }}
-          </div>
-          <div class="form-group" style="display:inline;">
-            {{ DBEST_form.submit(class="btn btn-outline-info") }}
-          </div>
-        <input type="reset">
-        </div>
-      </fieldset>   
-    </form>
-  -->
+      
 
   <fieldset>
       <legend>DBEST parameters</legend>
@@ -179,12 +56,12 @@ breakpoints in the fitting)</td>
           Start date
           <input type="range" name="date_from_input" min=1983 max=2019 id="date_from_range" 
           onchange="updateInput(this.value, this.name);">
-          <input type="text" id="date_from_input" name="date_from"  value="">
+          <input type="text" id="date_from_input" name="from_year"  value="">
           <br>
           End date
           <input type="range" name="date_to_input" min='' max='' id="date_to_range" 
           onchange="updateInput(this.value, this.name);">
-          <input type="text" name="date_to" id="date_to_input" value="">
+          <input type="text" name="to_year" id="date_to_input" value="">
           <br>
           Coordinates
           <textarea id="coords" name="coordinates" style="width:300px;height:70px"></textarea>
@@ -203,7 +80,7 @@ breakpoints in the fitting)</td>
       </select><br>
       Algorithm
       <select name="algorithm">
-        <option value="change_detection" selected>change detection</option>
+        <option value="changedetection" selected>change_detection</option>
         <option value="generalization">generalization</option>
       </select><br>
       Number of breakpoints
