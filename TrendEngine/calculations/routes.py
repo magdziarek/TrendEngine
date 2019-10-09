@@ -17,23 +17,18 @@ from .polytrend import polytrend_func
 
 calculations = Blueprint('calculations', __name__)
 
-@calculations.route('/run_DBEST', methods=['GET', 'POST'])
-def run_DBEST():
-    """ Get user's input and send to dbest_func in dbest.py"""
-    if request.method == 'POST':
-        #parameters for datasets
-        parameters = request.form
-
-    result = dbest_func(parameters)
-    return result
-
-@calculations.route('/run_polytrend', methods=['GET', 'POST'])
-def run_polytrend():
+@calculations.route('/result', methods=['GET', 'POST'])
+def get_result():
     """ Get user's input and send to polytrend_func in polytrend.py"""
   
     if request.method == 'POST':
         #parameters for datasets
         parameters = request.form
 
-    result = polytrend_func(parameters)
+    if (parameters['isDbest'] == "yes"):
+        result = dbest_func(parameters)
+        print("Is dbest?", parameters['isDbest'])
+    elif (parameters['isPolytrend'] == "yes"):    
+        result = polytrend_func(parameters)
+        print("is polytrend?", parameters['isPolytrend'])
     return result
