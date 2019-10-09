@@ -45,7 +45,7 @@
         <fieldset>
             <legend>Dataset query</legend>
             Dataset
-            <select id="dataset_name" name="dataset_name" onchange="updateDateRange(this.value)">
+            <select id="dataset_name" name="dataset_name" onchange="updateValues(this.value)">
               <option value=0 selected>Select name</option>
               <option value="NASA/GIMMS/3GV0">GIMMS NDVI 8000m</option>
               <option value="MODIS/006/MOD13Q1_NDVI">MODIS NDVI 250m</option>
@@ -148,8 +148,14 @@
 <script>
 
   var coordinates = document.getElementById('coords'),
+    dataset_name = document.forms["form"]["dataset_name"],
     isPolytrend = document.getElementById("isPolytrend"),
-    isDbest = document.getElementById("isDbest");
+    isDbest = document.getElementById("isDbest"),
+    start = document.forms["form"]["from_year"],
+    end = document.forms["form"]["to_year"],
+    breakpoint_no = document.forms["form"]["breakpoint_no"],
+    first_level_shift = document.forms["form"]["first_level_shift"],
+    second_level_shift = document.forms["form"]["second_level_shift"];
 
   function setDbest(){
     let dbestDiv = document.getElementById('dbestDiv');
@@ -165,31 +171,40 @@
     isPolytrend.value = "yes";
     isDbest.value = "no";
   }
-  function copyCoords(){
-    coordinates.select();
-    document.execCommand("copy");
+
+  function updateValues(collection){
+    if (collection == "NASA/GIMMS/3GV0"){
+      console.log(collection);
+      first_level_shift.value = 0.1;
+      first_level_shift.innerHTML = 0.1;
+      second_level_shift.value = 0.2;
+      second_level_shift.innerHTML = 0.2;
+    }
+    else{
+      console.log(collection);
+      first_level_shift.value = 500;
+      first_level_shift.innerHTML = 500;
+      second_level_shift.value = 1000;
+      second_level_shift.innerHTML = 1000;
+    }
   }
 
   function validateForm() {
     console.log('validating form');
-    let start = document.forms["form"]["from_year"].value,
-      end = document.forms["form"]["to_year"].value,
-      breakpoint_no = document.forms["form"]["breakpoint_no"].value;
 
-    if (start > end) {
+    if (start.value > end.value) {
       alert("Start date must be greater than end date.");
       return false;
     }
-    else if(start == '' || end == ''){
+    else if (start.value == '' || end.value == ''){
       alert("Please input dates.");
       return false;  
     }
-
-    if(document.forms["form"]["coords"].value == '' || document.forms["form"]["dataset_name"].value == 0){
-      alert("You must specify the coordinates of your area of interest");
+    if (dataset_name.value == 0 || document.forms["form"]["coords"].value == ''){
+      alert("You must specify the dataset name and coordinates of your area of interest");
       return false;
     }
-    if (isDbest == "yes" && breakpoint_no == ''){
+    if (isDbest.value == "yes" && breakpoint_no.value == ''){
       alert('How many breakpoints?')
       return false;
     }
