@@ -38,41 +38,43 @@
     <button id="dbestBtn" onclick="setDbest()">DBEST</button>
     <button id="ptBtn" onclick="setPt()">PolyTrend</button>
     <a href="{{ url_for('main.help') }}"><button>Help</button></a>
-    <form method="POST" action="{{ url_for('calculations.run_DBEST') }}">
-      
 
-  <fieldset>
+
+    <form method="POST" action="{{ url_for('calculations.get_result') }}">
+      <!-- start of dataset form fields-->
+        <fieldset>
+            <legend>Dataset query</legend>
+            Dataset
+            <select id="dataset_name" name="dataset_name" onchange="updateDateRange(this.value)">
+              <option value=0 selected>Select name</option>
+              <option value="NASA/GIMMS/3GV0">GIMMS NDVI 8000m</option>
+              <option value="MODIS/006/MOD13Q1_NDVI">MODIS NDVI 250m</option>
+              <option value="MODIS/006/MOD13Q1_EVI">MODIS EVI 250m</option>
+            </select>
+            <br>
+            Start date
+            <input type="range" name="date_from_input" min=1983 max=2019 id="date_from_range" 
+            onchange="updateInput(this.value, this.name);">
+            <input type="text" id="date_from_input" name="from_year"  value="">
+            <br>
+            End date
+            <input type="range" name="date_to_input" min='' max='' id="date_to_range" 
+            onchange="updateInput(this.value, this.name);">
+            <input type="text" name="to_year" id="date_to_input" value="">
+            <br>
+            Coordinates
+            <textarea id="coords" name="coordinates" style="width:300px;height:70px"></textarea>
+            <br>
+            Save time series to a csv file? 
+            <label for="yes">Yes</label>
+            <input type="radio" name="save_ts_to_csv" value="yes" id="yes">
+            <label for="no">No</label>
+            <input type="radio" name="save_ts_to_csv" value="no" id="no" checked>
+        </fieldset>
+     <!-- end of dataset form fields-->
+    <div id="dbestDiv" style="display: none">
+    <fieldset>
       <legend>DBEST parameters</legend>
-      <fieldset>
-          <legend>Dataset query</legend>
-          Dataset
-          <select id="dataset_name" name="dataset_name" onchange="updateDateRange(this.value)">
-            <option value=0 selected>Select name</option>
-            <option value="NASA/GIMMS/3GV0">GIMMS NDVI 8000m</option>
-            <option value="MODIS/006/MOD13Q1_NDVI">MODIS NDVI 250m</option>
-            <option value="MODIS/006/MOD13Q1_EVI">MODIS EVI 250m</option>
-          </select>
-          <br>
-          Start date
-          <input type="range" name="date_from_input" min=1983 max=2019 id="date_from_range" 
-          onchange="updateInput(this.value, this.name);">
-          <input type="text" id="date_from_input" name="from_year"  value="">
-          <br>
-          End date
-          <input type="range" name="date_to_input" min='' max='' id="date_to_range" 
-          onchange="updateInput(this.value, this.name);">
-          <input type="text" name="to_year" id="date_to_input" value="">
-          <br>
-          Coordinates
-          <textarea id="coords" name="coordinates" style="width:300px;height:70px"></textarea>
-          <br>
-          Save time series to a csv file? 
-          <label for="yes">Yes</label>
-          <input type="radio" name="save_ts_to_csv" value="yes" id="yes">
-          <label for="no">No</label>
-          <input type="radio" name="save_ts_to_csv" value="no" id="no" checked>
-      </fieldset>
-      <div id="dbestDiv" style="display: none">
       <input type="" id="isDbest" name="isDbest" value="yes" style="display: none"> 
       Data type
       <select name="data_type">
@@ -115,39 +117,8 @@
     <input type="submit" value="Submit">
     <input type="reset" value="Reset">
   </div>
-    </form>
         <!-- PolyTrend input -->
-      <div id="ptDiv" style="display: none;">
-    <form method="POST" action="{{ url_for('calculations.run_polytrend') }}">
-        <legend>Dataset query</legend>
-        Dataset
-        <select id="dataset_name" name="dataset_name" onchange="updateDateRange(this.value)">
-          <option value=0 selected>Select name</option>
-          <option value="NASA/GIMMS/3GV0">GIMMS NDVI 8000m</option>
-          <option value="MODIS/006/MOD13Q1_NDVI">MODIS NDVI 250m</option>
-          <option value="MODIS/006/MOD13Q1_EVI">MODIS EVI 250m</option>
-        </select>
-        <br>
-        Start date
-        <input type="range" name="date_from_input" min=1983 max=2019 id="date_from_range" 
-        onchange="updateInput(this.value, this.name);">
-        <input type="text" id="date_from_input" name="from_year"  value="">
-        <br>
-        End date
-        <input type="range" name="date_to_input" min='' max='' id="date_to_range" 
-        onchange="updateInput(this.value, this.name);">
-        <input type="text" name="to_year" id="date_to_input" value="">
-        <br>
-        Coordinates
-        <textarea id="coords" name="coordinates" style="width:300px;height:70px"></textarea>
-        <br>
-        Save time series to a csv file? 
-        <label for="yes">Yes</label>
-        <input type="radio" name="save_ts_to_csv" value="yes" id="yes">
-        <label for="no">No</label>
-        <input type="radio" name="save_ts_to_csv" value="no" id="no" checked>
-    </fieldset>
-
+    <div id="ptDiv" style="display: none;">
       <h3>Select parameters for PolyTrend</h3>
       <fieldset>
         <legend>PolyTrend parameters</legend>
@@ -163,6 +134,7 @@
       </fieldset>
       <input type="submit" value="Submit">
       <input type="reset" value="Reset">
+    </div>
     </form>
   </div>
   <div id="right-col" class="grid-container-cell"> 
@@ -192,17 +164,21 @@
     modisDiv.style.display = '';
   }
   */
-  var coordinates = document.getElementById('coords');
+  var coordinates = document.getElementById('coords'),
+    isPolytrend = document.getElementById("isPolytrend"),
+    isDbest = document.getElementById("isDbest");
 
   function setDbest(){
     let dbestDiv = document.getElementById('dbestDiv');
     ptDiv.style.display = 'none';
     dbestDiv.style.display = '';
+    isPolytrend.value == "no"
   }
   function setPt(){
     let ptDiv = document.getElementById('ptDiv');
     dbestDiv.style.display = 'none';
     ptDiv.style.display = '';
+    isDbest.value = "no"
   }
   function copyCoords(){
     coordinates.select();
