@@ -72,6 +72,7 @@
           <label for="no">No</label>
           <input type="radio" name="save_ts_to_csv" value="no" id="no" checked>
       </fieldset>
+      <div id="dbestDiv" style="display: none">
       <input type="" id="isDbest" name="isDbest" value="yes" style="display: none"> 
       Data type
       <select name="data_type">
@@ -113,54 +114,55 @@
     </fieldset>
     <input type="submit" value="Submit">
     <input type="reset" value="Reset">
+  </div>
     </form>
         <!-- PolyTrend input -->
-    <form method="POST" action="{{ url_for('calculations.run_polytrend') }}">
       <div id="ptDiv" style="display: none;">
-        {{ PolyTrend_form.hidden_tag() }}
-          <h3>Select parameters for PolyTrend</h3>
-          <fieldset class="form-group">
-          <div class="form-group">
-            {{ PolyTrend_form.dataset_name.label(class="form-control-label") }}
-            {{ PolyTrend_form.dataset_name(class="form-control form-control-lg") }}
-          </div>
-          <div class="form-group">
-            {{ PolyTrend_form.user_dataset_name.label(class="form-control-label") }}
-            {{ PolyTrend_form.user_dataset_name(class="form-control form-control-lg") }}
-            <small>GEE ID of an existing asset (currently unavailable)</small>
-          </div>
-          <div class="form-group">
-            <span title='For MODIS no earlier than 2000-03-01, for GIMMS 1981-07-01'>
-            {{ PolyTrend_form.date_from.label(class="form-control-label") }}
-            {{ PolyTrend_form.date_from(class="form-control form-control-lg", placeholder="YYYY-MM-DD") }}
-            </span>
-          </div>
-          <div class="form-group">
-            {{ PolyTrend_form.date_to.label(class="form-control-label") }}
-            {{ PolyTrend_form.date_to(class="form-control form-control-lg", placeholder="YYYY-MM-DD") }}
-          </div>
-          <div class="form-group" id="coordinates">
-            {{ PolyTrend_form.coordinates.label(class="form-control-label") }}
-            {{ PolyTrend_form.coordinates(class="form-control form-control-lg", placeholder="[longitude, latitude]") }}
-          </div>
-          <div class="form-group">
-            {{ DBEST_form.save_ts_to_csv.label(class="form-control-label") }}
-            {{ DBEST_form.save_ts_to_csv(class="form-control form-control-lg") }}
-          </div>
-          <div class="form-group">
-            {{ PolyTrend_form.alpha.label(class="form-control-label") }}
-            {{ PolyTrend_form.alpha(class="form-control form-control-lg") }}
-          </div>
-          <div class="form-group">
-            {{ DBEST_form.save_result_to_csv.label(class="form-control-label") }}
-            {{ DBEST_form.save_result_to_csv(class="form-control form-control-lg") }}
-          </div>
-        <div class="form-group" style="display:inline;">
-          {{ PolyTrend_form.submit(class="btn btn-outline-info") }}
-        </div>
-      <input type="reset">
-      </div>     
+    <form method="POST" action="{{ url_for('calculations.run_polytrend') }}">
+        <legend>Dataset query</legend>
+        Dataset
+        <select id="dataset_name" name="dataset_name" onchange="updateDateRange(this.value)">
+          <option value=0 selected>Select name</option>
+          <option value="NASA/GIMMS/3GV0">GIMMS NDVI 8000m</option>
+          <option value="MODIS/006/MOD13Q1_NDVI">MODIS NDVI 250m</option>
+          <option value="MODIS/006/MOD13Q1_EVI">MODIS EVI 250m</option>
+        </select>
+        <br>
+        Start date
+        <input type="range" name="date_from_input" min=1983 max=2019 id="date_from_range" 
+        onchange="updateInput(this.value, this.name);">
+        <input type="text" id="date_from_input" name="from_year"  value="">
+        <br>
+        End date
+        <input type="range" name="date_to_input" min='' max='' id="date_to_range" 
+        onchange="updateInput(this.value, this.name);">
+        <input type="text" name="to_year" id="date_to_input" value="">
+        <br>
+        Coordinates
+        <textarea id="coords" name="coordinates" style="width:300px;height:70px"></textarea>
+        <br>
+        Save time series to a csv file? 
+        <label for="yes">Yes</label>
+        <input type="radio" name="save_ts_to_csv" value="yes" id="yes">
+        <label for="no">No</label>
+        <input type="radio" name="save_ts_to_csv" value="no" id="no" checked>
+    </fieldset>
+
+      <h3>Select parameters for PolyTrend</h3>
+      <fieldset>
+        <legend>PolyTrend parameters</legend>
+        <input type="" id="isPolytrend" name="isPolytrend" value="yes" style="display: none"> 
+        Alpha
+        <input type="text" name="alpha" value=0.05></input>
+        <br>
+        Save result to a csv file? 
+        <label for="yes">Yes</label>
+        <input type="radio" name="save_result_to_csv" value="yes" id="yes">
+        <label for="no">No</label>
+        <input type="radio" name="save_result_to_csv" value="no" id="no" checked>
       </fieldset>
+      <input type="submit" value="Submit">
+      <input type="reset" value="Reset">
     </form>
   </div>
   <div id="right-col" class="grid-container-cell"> 
