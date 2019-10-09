@@ -3,7 +3,6 @@ import jinja2
 #for running R packages
 from rpy2.robjects.packages import importr
 #local imports
-from TrendEngine.main.forms import DbestParametersForm, PolyTrendParametersForm 
 from .dbest import dbest_func
 from .polytrend import polytrend_func
 
