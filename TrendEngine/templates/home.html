@@ -141,29 +141,13 @@
     <h3>Check coordinates</h3>
    <div id="map" style="width: 600px; height: 600px"> 
    </div>
-   <h3>Coordinates</h3>
-   <p>Copy coordinates from underneath exactly in the format provided, <br>
-   e.g. for point [long, lat], for polygon [[[long, lat], [long, lat], [long, lat]]]</p>
-    <button onclick="copyCoords()">Copy</button>
-   <textarea id="coords" style="width:400px;height:150px"></textarea>
  </div>
  </body>
 
  {% endblock %}
 {% block script %}
 <script>
-  /*
-  function setGimms(){
-    let gimmsDiv = document.getElementById('gimmsDiv');
-    modisDiv.style.display = 'none';
-    gimmsDiv.style.display = '';
-  }
-  function setModis(){
-    let modisDiv = document.getElementById('modisDiv');
-    gimmsDiv.style.display = 'none';
-    modisDiv.style.display = '';
-  }
-  */
+
   var coordinates = document.getElementById('coords'),
     isPolytrend = document.getElementById("isPolytrend"),
     isDbest = document.getElementById("isDbest");
@@ -172,13 +156,15 @@
     let dbestDiv = document.getElementById('dbestDiv');
     ptDiv.style.display = 'none';
     dbestDiv.style.display = '';
-    isPolytrend.value == "no"
+    isPolytrend.value = "no";
+    isDbest.value = "yes";
   }
   function setPt(){
     let ptDiv = document.getElementById('ptDiv');
     dbestDiv.style.display = 'none';
     ptDiv.style.display = '';
-    isDbest.value = "no"
+    isPolytrend.value = "yes";
+    isDbest.value = "no";
   }
   function copyCoords(){
     coordinates.select();
