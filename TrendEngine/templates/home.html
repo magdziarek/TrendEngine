@@ -40,7 +40,7 @@
     <a href="{{ url_for('main.help') }}"><button>Help</button></a>
 
 
-    <form method="POST" action="{{ url_for('calculations.get_result') }}">
+    <form name="form" method="POST" onsubmit="return validateForm()" action="{{ url_for('calculations.get_result') }}">
       <!-- start of dataset form fields-->
         <fieldset>
             <legend>Dataset query</legend>
@@ -87,8 +87,7 @@
         <option value="generalization">generalization</option>
       </select><br>
       Number of breakpoints
-      <input type="range" min=1 max=40 name="breakpoint_no_input" onchange="updateInput(this.value, this.name);">
-      <input type="text" id="breakpoint_no_input" name="breakpoint_no">
+      <input type="text" id="breakpoint_no" name="breakpoint_no">
       <br>
       Seasonality
       <input type="text" name="seasonality" value=12></input>
@@ -170,6 +169,31 @@
     coordinates.select();
     document.execCommand("copy");
   }
+
+  function validateForm() {
+    console.log('validating form');
+    let start = document.forms["form"]["from_year"].value,
+      end = document.forms["form"]["to_year"].value,
+      breakpoint_no = document.forms["form"]["breakpoint_no"].value;
+
+    if (start > end) {
+      alert("Start date must be greater than end date.");
+      return false;
+    }
+    else if(start == '' || end == ''){
+      alert("Please input dates.");
+      return false;  
+    }
+
+    if(document.forms["form"]["coords"].value == '' || document.forms["form"]["dataset_name"].value == 0){
+      alert("You must specify the coordinates of your area of interest");
+      return false;
+    }
+    if (isDbest == "yes" && breakpoint_no == ''){
+      alert('How many breakpoints?')
+      return false;
+    }
+}
 
   ///////////////// MAKE A MAP WITH DRAW CONTROL FOR MARKING AREA OF INTEREST ////////////////////////////
   var map = document.getElementById('map'),
