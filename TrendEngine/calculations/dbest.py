@@ -424,22 +424,6 @@ def dbest_func(parameters):
     alpha = parameters.get('alpha', type=float)
     #end of getting DBEST parameters
 
-
-    # test data working
-    # data_type = 'cyclical'
-    # seasonality = 12
-    # algorithm = 'changedetection'
-    # breakpoints_no = 3
-    # first_level_shift = 0.1
-    # second_level_shift = 0.2
-    # duration = 24
-    # distance_threshold = 'default'
-    # save_ts_to_csv = parameters['save_ts_to_csv']
-    # save_result_to_csv = parameters['save_result_to_csv']
-    # is_polytrend = False 
-    # print('changes')
-    #end test
-
     if (is_polygon):
 
         years = ee.List.sequence(start_year, end_year, 1)
