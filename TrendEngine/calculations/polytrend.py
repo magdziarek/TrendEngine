@@ -350,20 +350,25 @@ def polytrend_func(parameters):
         is_polygon = False
     else:
         print('wrong coordinates')
-    start_date = parameters['date_from']
-    end_date = parameters['date_to']
-    start_year = int(start_date.split('-')[0])
-    end_year = int(end_date.split('-')[0])
-    collection = ee.ImageCollection(name_of_collection).filterDate(start_date, end_date) 
+
+    start_year = parameters.get('from_year')
+    end_year = parameters.get('to_year')
+    start_date = start_year + "-01-01"
+    end_date = end_year + "-12-31"
+    start_year = int(start_year)
+    end_year = int(end_year)
+    img_collection = ee.ImageCollection(name_of_collection) 
+    crs = img_collection.first().getInfo()['bands'][0]['crs']
+    collection = img_collection.filterDate(start_date, end_date).filterBounds(aoi)
+    save_ts_to_csv = parameters.get('save_ts_to_csv')
+    save_result_to_csv = parameters.get('save_result_to_csv')
+    is_polytrend = True 
+    alpha = parameters.get('alpha', type=float)
     try:
         crs = collection.first().getInfo()['bands'][0]['crs']
     except TypeError:
         print('dataset empty')
         return render_template('error.html')
-    is_polytrend = True
-    alpha = parameters['alpha']
-    save_ts_to_csv = parameters['save_ts_to_csv']
-    save_result_to_csv = parameters['save_result_to_csv']
     #end of getting parameters
 
     #Create list of years
@@ -379,7 +384,6 @@ def polytrend_func(parameters):
 
     # Create a list of year-collection pairs (i.e. pack the function inputs)
     list_of_years_and_collections = years.zip(ee.List.repeat(collection, years.length()))
-
     annualNdvi = ee.ImageCollection.fromImages(list_of_years_and_collections.map(calculateAnnualMean))
 
     if (is_polygon):
@@ -406,7 +410,7 @@ def polytrend_func(parameters):
         except:
             message = "Sorry, something went wrong inside the PolyTrend function."
             return render_template("error.html", error_message=message)
-        if (save_result_to_csv):
+        if (save_result_to_csv == "yes"):
             result.to_csv('PolyTrend_result.csv')
         plots = visualize_polytrend_polygon(result)
  
@@ -418,7 +422,7 @@ def polytrend_func(parameters):
             return render_template("error.html", error_message=message)
         number_of_pixels = len(dataset) 
         print(number_of_pixels)
-        if (save_ts_to_csv):
+        if (save_ts_to_csv == "yes"):
             dataset.to_csv('time_series.csv')  
         try:    
             result = call_polytrend_point(dataset, alpha, band_name, ndvi_threshold)
