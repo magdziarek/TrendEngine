@@ -486,7 +486,7 @@ def dbest_func(parameters):
             if img_id not in ids_of_images:
                 ids_of_images.append(img_id)
         n = len(ids_of_images)
-        if (save_ts_to_csv):
+        if (save_ts_to_csv == "yes"):
             dataset.to_csv('time_series.csv')
         try:
             result = call_dbest_polygon(dataset, data_type, seasonality, algorithm, breakpoints_no, 
@@ -495,7 +495,7 @@ def dbest_func(parameters):
         except:
             message = 'Sorry, something went wrong inside DBEST function.'
             return render_template("error.html", error_message=message)
-        if (save_result_to_csv):
+        if (save_result_to_csv == "yes"):
             result.to_csv('DBEST_result.csv')
         plots = dbest_visualize_polygon(result, algorithm, data_type)
 
@@ -550,7 +550,7 @@ def dbest_func(parameters):
             message = 'Sorry, something went wrong inside DBEST function.'
             return render_template("error.html", error_message=message)
             
-        if (save_result_to_csv):
+        if (save_result_to_csv == "yes"):
             result.to_csv('DBEST_result.csv')
 
         plots = dbest_visualize_point(result, time_steps, algorithm, data_type)
