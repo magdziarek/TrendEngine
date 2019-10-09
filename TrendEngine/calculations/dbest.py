@@ -406,8 +406,8 @@ def dbest_func(parameters):
     img_collection = ee.ImageCollection(name_of_collection) 
     crs = img_collection.first().getInfo()['bands'][0]['crs']
     collection = img_collection.filterDate(start_date, end_date).filterBounds(aoi)
-    save_ts_to_csv = parameters['save_ts_to_csv']
-    save_result_to_csv = parameters['save_result_to_csv']
+    save_ts_to_csv = parameters.get('save_ts_to_csv')
+    save_result_to_csv = parameters.get('save_result_to_csv')
     is_polytrend = False 
     # end of getting data parameters
 
