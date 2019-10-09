@@ -53,13 +53,9 @@
             </select>
             <br>
             Start date
-            <input type="range" name="date_from_input" min=1983 max=2019 id="date_from_range" 
-            onchange="updateInput(this.value, this.name);">
             <input type="text" id="date_from_input" name="from_year"  value="">
             <br>
             End date
-            <input type="range" name="date_to_input" min='' max='' id="date_to_range" 
-            onchange="updateInput(this.value, this.name);">
             <input type="text" name="to_year" id="date_to_input" value="">
             <br>
             Coordinates
@@ -199,6 +195,26 @@
     else if (start.value == '' || end.value == ''){
       alert("Please input dates.");
       return false;  
+    }
+    if(dataset_name.value == "NASA/GIMMS/3GV0"){
+      if(start.value < 1982 || start.value > 2012){
+        alert('Check start date for GIMMS dataset. It shouldn\'t be earlier than 1982 and no later than 2013.');
+        return false;
+      }
+      else if(end.value < 1982 || end.value > 2013){
+        alert('Check end date for GIMMS dataset. It shouldn\'t be earlier than 1982 and no later than 2013.');
+        return false;
+      }
+    }
+    else {
+      if(start.value < 2001 || start.value > 2019){
+        alert('Check start date for MODIS dataset. It shouldn\'t be earlier than 2001 and no later than 2019.');
+        return false;
+      }
+      else if(end.value < 2001 || end.value > 2019){
+        alert('Check end date for MODIS dataset. It shouldn\'t be earlier than 2001 and no later than 2019.');
+        return false;
+      }
     }
     if (dataset_name.value == 0 || document.forms["form"]["coords"].value == ''){
       alert("You must specify the dataset name and coordinates of your area of interest");
