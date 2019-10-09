@@ -1,6 +1,6 @@
-
 from flask import Flask, render_template, url_for, request, flash, Blueprint     
 import jinja2
+from werkzeug import ImmutableMultiDict
 # for pie charts
 from math import pi
 from bokeh.transform import cumsum
@@ -22,7 +22,6 @@ from bokeh.plotting import figure, ColumnDataSource
 from bokeh.layouts import layout, row
 from bokeh.embed import components
 # local imports
-from TrendEngine.main.forms import PolyTrendParametersForm 
 from .utils import get_dataset_for_point, get_dataset_for_polygon, get_PT_statistics
 
 try:
