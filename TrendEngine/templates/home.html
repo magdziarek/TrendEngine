@@ -39,6 +39,7 @@
     <button id="ptBtn" onclick="setPt()">PolyTrend</button>
     <a href="{{ url_for('main.help') }}"><button>Help</button></a>
     <form method="POST" action="{{ url_for('calculations.run_DBEST') }}">
+      <!-- 
       {{ DBEST_form.hidden_tag() }}
       <div id="dbestDiv" style="display: none;">
         <table>
@@ -161,7 +162,81 @@ breakpoints in the fitting)</td>
         </div>
       </fieldset>   
     </form>
+  -->
 
+  <fieldset>
+      <legend>DBEST parameters</legend>
+      <fieldset>
+          <legend>Dataset query</legend>
+          Dataset
+          <select id="dataset_name" name="dataset_name" onchange="updateDateRange(this.value)">
+            <option value=0 selected>Select name</option>
+            <option value="NASA/GIMMS/3GV0">GIMMS NDVI 8000m</option>
+            <option value="MODIS/006/MOD13Q1_NDVI">MODIS NDVI 250m</option>
+            <option value="MODIS/006/MOD13Q1_EVI">MODIS EVI 250m</option>
+          </select>
+          <br>
+          Start date
+          <input type="range" name="date_from_input" min=1983 max=2019 id="date_from_range" 
+          onchange="updateInput(this.value, this.name);">
+          <input type="text" id="date_from_input" name="date_from"  value="">
+          <br>
+          End date
+          <input type="range" name="date_to_input" min='' max='' id="date_to_range" 
+          onchange="updateInput(this.value, this.name);">
+          <input type="text" name="date_to" id="date_to_input" value="">
+          <br>
+          Coordinates
+          <textarea id="coords" name="coordinates" style="width:300px;height:70px"></textarea>
+          <br>
+          Save time series to a csv file? 
+          <label for="yes">Yes</label>
+          <input type="radio" name="save_ts_to_csv" value="yes" id="yes">
+          <label for="no">No</label>
+          <input type="radio" name="save_ts_to_csv" value="no" id="no" checked>
+      </fieldset>
+      <input type="" id="isDbest" name="isDbest" value="yes" style="display: none"> 
+      Data type
+      <select name="data_type">
+        <option value="cyclical" selected>cyclical</option>
+        <option value="non-cyclical">non-cyclical</option>
+      </select><br>
+      Algorithm
+      <select name="algorithm">
+        <option value="change_detection" selected>change detection</option>
+        <option value="generalization">generalization</option>
+      </select><br>
+      Number of breakpoints
+      <input type="range" min=1 max=40 name="breakpoint_no_input" onchange="updateInput(this.value, this.name);">
+      <input type="text" id="breakpoint_no_input" name="breakpoint_no">
+      <br>
+      Seasonality
+      <input type="text" name="seasonality" value=12></input>
+      <br>
+      First level shift 
+      <input type="text" name="first_level_shift" id="first_level_shift" value=0.1></input>
+      <br>
+      Second level shift 
+      <input type="text" name="second_level_shift" id="second_level_shift" value=0.2></input>
+      <br>
+      Distance 
+      <input type="text" name="distance" value="default"></input>
+      <br>
+      Duration 
+      <input type="text" name="duration" value=12></input>
+      <br>
+      Alpha
+      <input type="text" name="alpha" value=0.05></input>
+      <br>
+      Save result to a csv file? 
+      <label for="yes">Yes</label>
+      <input type="radio" name="save_result_to_csv" value="yes" id="yes">
+      <label for="no">No</label>
+      <input type="radio" name="save_result_to_csv" value="no" id="no" checked>
+    </fieldset>
+    <input type="submit" value="Submit">
+    <input type="reset" value="Reset">
+    </form>
         <!-- PolyTrend input -->
     <form method="POST" action="{{ url_for('calculations.run_polytrend') }}">
       <div id="ptDiv" style="display: none;">

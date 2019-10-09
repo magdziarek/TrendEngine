@@ -1,5 +1,6 @@
 from flask import Flask, render_template, url_for, request, flash, Blueprint     
 import jinja2
+from werkzeug import ImmutableMultiDict
 #for transforming R objects
 from rpy2.robjects.packages import importr
 from rpy2.robjects.vectors import FloatVector
@@ -20,6 +21,7 @@ from bokeh.embed import components
 #local import
 from TrendEngine.main.forms import DbestParametersForm
 from .utils import get_dataset_for_point, get_dataset_for_polygon
+
 
 try:
     import ee
@@ -210,7 +212,7 @@ def dbest_visualize_point(result, time_steps, algorithm, data_type):
 
     """
 
-    if (algorithm == 'change detection'):
+    if (algorithm == 'changedetection'):
         start_arr= np.asarray(result[0][2])
         # Create a dictionary for textual output in result_DBEST.html
         result_to_display = {
@@ -395,31 +397,55 @@ def dbest_func(parameters):
         is_polygon = False
     else:
         print('wrong coordinates')
-    start_date = parameters['date_from']
-    end_date = parameters['date_to']
-    start_year = int(start_date.split('-')[0])
-    end_year = int(end_date.split('-')[0])
+    # start_date = parameters.get('date_from')
+    # end_date = parameters['date_to']
+    # start_year = int(start_date.split('-')[0])
+    # end_year = int(end_date.split('-')[0])
+    # img_collection = ee.ImageCollection(name_of_collection) 
+    # crs = img_collection.first().getInfo()['bands'][0]['crs']
+    # collection = img_collection.filterDate(start_date, end_date).filterBounds(aoi)
+    # save_ts_to_csv = parameters['save_ts_to_csv']
+    # save_result_to_csv = parameters['save_result_to_csv']
+    # is_polytrend = False 
+    # end of getting data parameters
+
+    #getting algorithm parameters for DBEST
+    # data_type = parameters['data_type']
+    # seasonality = int(parameters['seasonality'])
+    # algorithm = parameters['algorithm']
+    # breakpoints_no = int(parameters['breakpoint_no'])
+    # first_level_shift = float(parameters['first_level_shift'])
+    # second_level_shift = float(parameters['second_level_shift'])
+    # duration = int(parameters['duration'])
+    # distance_threshold = parameters['distance']
+    # if distance_threshold != 'default':
+    #     distance_threshold = float(distance_threshold)
+    # alpha = float(parameters['alpha'])
+    #end of getting DBEST parameters
+
+
+    #changes
+    data_type = 'cyclical'
+    seasonality = 12
+    algorithm = 'changedetection'
+    breakpoints_no = 3
+    first_level_shift = 0.1
+    second_level_shift = 0.2
+    duration = 24
+    distance_threshold = 'default'
+    alpha = 0.05
+    start_date = '2000-01-01'
+    end_date ='2005-12-31'
+    start_year = 2000
+    end_year = 2005
     img_collection = ee.ImageCollection(name_of_collection) 
     crs = img_collection.first().getInfo()['bands'][0]['crs']
     collection = img_collection.filterDate(start_date, end_date).filterBounds(aoi)
     save_ts_to_csv = parameters['save_ts_to_csv']
     save_result_to_csv = parameters['save_result_to_csv']
     is_polytrend = False 
-    # end of getting data parameters
-
-    #getting algorithm parameters for DBEST
-    data_type = parameters['data_type']
-    seasonality = int(parameters['seasonality'])
-    algorithm = parameters['algorithm']
-    breakpoints_no = int(parameters['breakpoint_no'])
-    first_level_shift = float(parameters['first_level_shift'])
-    second_level_shift = float(parameters['second_level_shift'])
-    duration = int(parameters['duration'])
-    distance_threshold = parameters['distance']
-    if distance_threshold != 'default':
-        distance_threshold = float(distance_threshold)
-    alpha = float(parameters['alpha'])
-    #end of getting DBEST parameters
+    print('changes')
+    #end changes
 
     if (is_polygon):
 
