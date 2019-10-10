@@ -70,6 +70,7 @@ def call_dbest_polygon(dataset, data_type, seasonality, algorithm, breakpoints_n
                 pixel_long = dataset.at[i, 'longitude']
                 pixel_lat = dataset.at[i, 'latitude']
                 geometry = [round(pixel_long, 4), round(pixel_lat, 4)]
+                print('result inside dbest' , result[2][0])
                 DBEST_result.append([geometry, int(result[2][0]), int(result[3][0]), int(result[4][0]), 
                     float(result[5][0]), int(result[6][0]), result[7][0]]) 
             else:
@@ -471,12 +472,13 @@ def dbest_func(parameters):
         n = len(ids_of_images)
         if (save_ts_to_csv == "yes"):
             dataset.to_csv('time_series.csv')
+            
         try:
             result = call_dbest_polygon(dataset, data_type, seasonality, algorithm, breakpoints_no, 
                 first_level_shift, second_level_shift, duration, distance_threshold, alpha, n, 
                 number_of_pixels, band_name, ndvi_threshold)
         except:
-            message = 'Sorry, something went wrong inside DBEST function.'
+            message = 'Sorry, something went wrong inside DBEST function. Potential problem: your data is not cyclical.'
             return render_template("error.html", error_message=message)
         if (save_result_to_csv == "yes"):
             result.to_csv('DBEST_result.csv')
