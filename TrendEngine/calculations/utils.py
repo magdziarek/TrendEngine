@@ -4,6 +4,8 @@ import ee
 import pandas as pd
 
 def get_dataset_for_polygon(is_polytrend, collection, AOI, scale, crs):
+    crs = collection.first().getInfo()['bands'][0]['crs']
+    print('crs', crs)
     geom_values = collection.getRegion(geometry=AOI, scale=scale, crs=crs)
     geom_values_list = ee.List(geom_values).getInfo()
 
