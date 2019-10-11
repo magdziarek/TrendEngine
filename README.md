@@ -1,3 +1,5 @@
+# TrendEngine
+
 TrendEngine serves detection of change and trend in vegetation using remote sensing time series data.
 The process consists of three steps: acquisition, analysis and visualization of results.
 
@@ -42,7 +44,3 @@ The analysis can be performed using two algorithms:
 TODO:
 - improve map display - better legends
 - fix option of using own dataset
-
-
-
-
