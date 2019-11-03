@@ -29,8 +29,6 @@ def get_result():
 
     if parameters["isDbest"] == "yes":
         result = do_dbest(parameters)
-        print("Is dbest?", parameters["isDbest"])
     elif parameters["isPolytrend"] == "yes":
         result = do_polytrend(parameters)
-        print("is polytrend?", parameters["isPolytrend"])
     return result
