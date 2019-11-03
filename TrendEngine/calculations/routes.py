@@ -1,10 +1,12 @@
-from flask import Flask, render_template, url_for, request, flash, Blueprint     
+from flask import Flask, render_template, url_for, request, flash, Blueprint
 import jinja2
-#for running R packages
+
+# for running R packages
 from rpy2.robjects.packages import importr
-#local imports
-from .dbest import dbest_func
-from .polytrend import polytrend_func
+
+# local imports
+from .dbest import do_dbest
+from .polytrend import do_polytrend
 
 ### import R's utility package
 ## only has to be done the first time the application is run
@@ -14,20 +16,21 @@ from .polytrend import polytrend_func
 # utils.install_packages('DBEST')
 # utils.install_packages('PolyTrend')
 
-calculations = Blueprint('calculations', __name__)
+calculations = Blueprint("calculations", __name__)
 
-@calculations.route('/result', methods=['GET', 'POST'])
+
+@calculations.route("/result", methods=["GET", "POST"])
 def get_result():
-    """ Get user's input and send to polytrend_func in polytrend.py"""
-  
-    if request.method == 'POST':
-        #parameters for datasets
+    """ Get user's input and send to do_polytrend or do_dbest"""
+
+    if request.method == "POST":
+        # parameters for datasets
         parameters = request.form
 
-    if (parameters['isDbest'] == "yes"):
-        result = dbest_func(parameters)
-        print("Is dbest?", parameters['isDbest'])
-    elif (parameters['isPolytrend'] == "yes"):    
-        result = polytrend_func(parameters)
-        print("is polytrend?", parameters['isPolytrend'])
+    if parameters["isDbest"] == "yes":
+        result = do_dbest(parameters)
+        print("Is dbest?", parameters["isDbest"])
+    elif parameters["isPolytrend"] == "yes":
+        result = do_polytrend(parameters)
+        print("is polytrend?", parameters["isPolytrend"])
     return result
