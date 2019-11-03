@@ -24,7 +24,6 @@ def get_result():
     """ Get user's input and send to polytrend_func in polytrend.py"""
 
     if request.method == "POST":
-        # parameters for datasets
         parameters = request.form
 
     if parameters["isDbest"] == "yes":
