@@ -31,6 +31,35 @@ except ImportError:
     raise ImportError("You either haven't installed or authenticated Earth Engine")
 ee.Initialize()
 
+def calculate_monthly_mean(year_and_collection):
+    # Unpack variable from the input parameter
+    year_and_collection = ee.List(year_and_collection)
+    year = ee.Number(year_and_collection.get(0))
+    _collection = ee.ImageCollection(year_and_collection.get(1))
+    start_date = ee.Date.fromYMD(year, 1, 1)
+    end_date = start_date.advance(1, "year")
+    annual = _collection.filterDate(start_date, end_date)
+
+    months = ee.List.sequence(1, 12, 1)
+
+    def get_monthly(month_and_collection):
+        month_and_collection = ee.List(month_and_collection)
+        month = ee.Number(month_and_collection.get(0))
+        _collection = ee.ImageCollection(month_and_collection.get(1))
+        start_date = ee.Date.fromYMD(year, month, 1)
+        end_date = start_date.advance(1, "month")
+        monthly_coll = (
+            _collection.filterDate(start_date, end_date)
+            .mean()
+            .set("system:time_start", start_date)
+        )
+        return monthly_coll
+
+    list_of_months_and_collections = months.zip(
+        ee.List.repeat(annual, months.length())
+    )
+    monthly_NDVI_collection = list_of_months_and_collections.map(get_monthly)
+    return monthly_NDVI_collection
 
 def call_dbest_polygon(
     dataset,
@@ -475,50 +504,21 @@ def do_dbest(parameters):
     if distance_threshold != "default":
         distance_threshold = float(distance_threshold)
     alpha = parameters.get("alpha", type=float)
+    years = ee.List.sequence(start_year, end_year, 1)
 
     if is_polygon:
-
-        years = ee.List.sequence(start_year, end_year, 1)
-
-        def calculate_monthly_mean_for_years(year_and_collection):
-            # Unpack variable from the input parameter
-            year_and_collection = ee.List(year_and_collection)
-            year = ee.Number(year_and_collection.get(0))
-            _collection = ee.ImageCollection(year_and_collection.get(1))
-            start_date = ee.Date.fromYMD(year, 1, 1)
-            end_date = start_date.advance(1, "year")
-            annual = _collection.filterDate(start_date, end_date)
-
-            months = ee.List.sequence(1, 12, 1)
-
-            def get_monthly(month_and_collection):
-                month_and_collection = ee.List(month_and_collection)
-                month = ee.Number(month_and_collection.get(0))
-                _collection = ee.ImageCollection(month_and_collection.get(1))
-                start_date = ee.Date.fromYMD(year, month, 1)
-                end_date = start_date.advance(1, "month")
-                monthly_coll = (
-                    _collection.filterDate(start_date, end_date)
-                    .mean()
-                    .set("system:time_start", start_date)
-                )
-                return monthly_coll
-
-            list_of_months_and_collections = months.zip(
-                ee.List.repeat(annual, months.length())
-            )
-            monthly_NDVI_collection = list_of_months_and_collections.map(get_monthly)
-            return monthly_NDVI_collection
-
+        
+        # Step 2: From bimonthly data create monthly data
         # Create a list of year-collection pairs (i.e. pack the function inputs)
         list_of_years_and_collections = years.zip(
             ee.List.repeat(collection, years.length())
         )
-
         monthly_NDVI_list = list_of_years_and_collections.map(
-            calculate_monthly_mean_for_years
+            calculate_monthly_mean
         ).flatten()
         monthly_NDVI = ee.ImageCollection.fromImages(monthly_NDVI_list)
+
+        # Step 3: get time series values from GEE
         try:
             dataset = get_dataset_for_polygon(
                 is_polytrend, monthly_NDVI, aoi, scale, crs
@@ -537,6 +537,7 @@ def do_dbest(parameters):
         if save_ts_to_csv == "yes":
             dataset.to_csv("time_series.csv")
 
+        # Step 4: Run DBEST
         try:
             result = call_dbest_polygon(
                 dataset,
@@ -559,57 +560,26 @@ def do_dbest(parameters):
             return render_template("error.html", error_message=message)
         if save_result_to_csv == "yes":
             result.to_csv("DBEST_result.csv")
+
+        # Step 5: Visualize results 
         plots = dbest_visualize_polygon(result, algorithm, data_type)
 
     elif is_point:
-
-        years = ee.List.sequence(start_year, end_year, 1)
+        # Step 2: From bimonthly data create monthly data
         MOD13Q1 = (
             collection.filterBounds(aoi)
             .filterDate(start_date, end_date)
             .select(band_name)
         )
-
-        def calculate_monthly_mean_for_years(year_and_collection):
-            # Unpack variable from the input parameter
-            year_and_collection = ee.List(year_and_collection)
-            year = ee.Number(year_and_collection.get(0))
-            _collection = ee.ImageCollection(year_and_collection.get(1))
-            start_date = ee.Date.fromYMD(year, 1, 1)
-            end_date = start_date.advance(1, "year")
-            annual = _collection.filterDate(start_date, end_date)
-
-            months = ee.List.sequence(1, 12, 1)
-
-            def get_monthly(month_and_collection):
-                month_and_collection = ee.List(month_and_collection)
-                month = ee.Number(month_and_collection.get(0))
-                _collection = ee.ImageCollection(month_and_collection.get(1))
-                start_date = ee.Date.fromYMD(year, month, 1)
-                end_date = start_date.advance(1, "month")
-                monthly_coll = (
-                    _collection.filterDate(start_date, end_date)
-                    .mean()
-                    .set("system:time_start", start_date)
-                )
-                return monthly_coll
-
-            list_of_months_and_collections = months.zip(
-                ee.List.repeat(annual, months.length())
-            )
-            monthly_NDVI_collection = list_of_months_and_collections.map(get_monthly)
-            return monthly_NDVI_collection
-
         # Create a list of year-collection pairs (i.e. pack the function inputs)
         list_of_years_and_collections = years.zip(
             ee.List.repeat(MOD13Q1, years.length())
         )
-
         monthly_NDVI_list = list_of_years_and_collections.map(
-            calculate_monthly_mean_for_years
+            calculate_monthly_mean
         ).flatten()
         monthly_NDVI = ee.ImageCollection.fromImages(monthly_NDVI_list)
-        print("size of annual", monthly_NDVI.size().getInfo())
+        # Step 3: get time series values from GEE
         try:
             dataset = get_dataset_for_polygon(
                 is_polytrend, monthly_NDVI, aoi, scale, crs
@@ -618,9 +588,9 @@ def do_dbest(parameters):
             message = "Sorry, couldn't get the data you requested. Possible problems: the dataset is too large (study area too large), study period is too long or the dataset for this period does not exist."
             return render_template("error.html", error_message=message)
         number_of_pixels = len(dataset)
-        print(number_of_pixels)
-
+        print('number of pixels: ', number_of_pixels)
         time_steps = dataset["time"]
+        # Step 4: Run DBEST
         try:
             result = call_dbest_point(
                 dataset,
@@ -642,7 +612,7 @@ def do_dbest(parameters):
 
         if save_result_to_csv == "yes":
             result.to_csv("DBEST_result.csv")
-
+        # Step 5: Visualize results 
         plots = dbest_visualize_point(result, time_steps, algorithm, data_type)
 
     return plots
