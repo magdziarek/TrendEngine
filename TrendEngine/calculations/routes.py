@@ -5,8 +5,8 @@ import jinja2
 from rpy2.robjects.packages import importr
 
 # local imports
-from .dbest import dbest_func
-from .polytrend import polytrend_func
+from .dbest import do_dbest
+from .polytrend import do_polytrend
 
 ### import R's utility package
 ## only has to be done the first time the application is run
