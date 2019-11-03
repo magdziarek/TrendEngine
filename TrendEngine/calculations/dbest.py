@@ -98,7 +98,6 @@ def call_dbest_polygon(
                 pixel_long = dataset.at[i, "longitude"]
                 pixel_lat = dataset.at[i, "latitude"]
                 geometry = [round(pixel_long, 4), round(pixel_lat, 4)]
-                print("result inside dbest", result[2][0])
                 DBEST_result.append(
                     [
                         geometry,
@@ -111,7 +110,7 @@ def call_dbest_polygon(
                     ]
                 )
             else:
-                print("!!!!!!!!!!!!!!! Unqualified value !!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                print("!!! Unqualified value !!!")
 
         df = pd.DataFrame(DBEST_result[0:], columns=DBEST_result_header)
     return df
@@ -144,7 +143,6 @@ def call_dbest_point(
         },
     )
     Y = dataset[band_name].values
-    print(Y)
     if all(val > ndvi_threshold for val in Y):
         vec = FloatVector(Y)
         ro.globalenv["dbest_result"] = dbest.DBEST(
@@ -162,7 +160,7 @@ def call_dbest_point(
         dbest_result = list(ro.r("dbest_result"))
         df = pd.DataFrame(dbest_result)
     else:
-        print("!!!!!!!!!!!!!!!!! Values below threshold !!!!!!!!!!!!!!!!!!!!!")
+        print("!!! Values below threshold !!!")
 
     return df
 
@@ -225,7 +223,6 @@ def dbest_visualize_polygon(result, algorithm, data_type):
             title="Change type map - abrupt (1), non-abrupt (0)",
             legend="Change type",
             line_color=None,
-            # return_html=True,
             show_figure=False,
         )
 
@@ -361,7 +358,6 @@ def dbest_visualize_point(result, time_steps, algorithm, data_type):
         f_local = np.asarray(result[0][8])
         fit = np.ravel(result[0][3])
         data = np.asarray(result[0][4])
-        print("!!!! result ", result[0])
         fit_plot = figure(
             background_fill_color="lightgrey",
             height=400,
@@ -411,7 +407,7 @@ def dbest_visualize_point(result, time_steps, algorithm, data_type):
 def do_dbest(parameters):
     """ Get data from GEE, split images into pixel time series,
         call DBEST R package for a list of time series values
-        for each pixel separately
+        for each pixel separately, visualize results
 
         Called from .routes.py
 
@@ -424,7 +420,7 @@ def do_dbest(parameters):
         render template result_DBEST.html with maps for polygon or plots for point
 
     """
-    # getting data parameters
+    # Step 1: get all parameters entered by the user and transform them
     name_of_collection = parameters.get("dataset_name")
     if name_of_collection == "NASA/GIMMS/3GV0":
         band_name = "ndvi"
@@ -466,9 +462,8 @@ def do_dbest(parameters):
     save_ts_to_csv = parameters.get("save_ts_to_csv")
     save_result_to_csv = parameters.get("save_result_to_csv")
     is_polytrend = False
-    # end of getting data parameters
 
-    # getting algorithm parameters for DBEST
+    # get algorithm parameters for DBEST
     data_type = parameters.get("data_type")
     seasonality = parameters.get("seasonality", type=int)
     algorithm = parameters.get("algorithm")
@@ -480,7 +475,6 @@ def do_dbest(parameters):
     if distance_threshold != "default":
         distance_threshold = float(distance_threshold)
     alpha = parameters.get("alpha", type=float)
-    # end of getting DBEST parameters
 
     if is_polygon:
 
@@ -654,14 +648,3 @@ def do_dbest(parameters):
     return plots
 
 
-"""
-def do_dbest():
-    get_parameters()
-    if (is_point):
-        make_composite_point()
-    elif (is_polygon):
-        make_composite_polygon()
-    analyze_data()
-    vizualize_data()
-    return result
-"""

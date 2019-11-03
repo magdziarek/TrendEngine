@@ -46,7 +46,7 @@ def visualize_polytrend_polygon(result):
         render_template with graphics
 
     """
-    ## get staticstics for all points ###
+    ## get staticstics for all points
     result_to_display = get_PT_statistics(result)
     trend_stats = {
         "concealed": result_to_display["count_concealed"],
@@ -55,7 +55,7 @@ def visualize_polytrend_polygon(result):
         "quadratic": result_to_display["count_quadratic"],
         "cubic": result_to_display["count_cubic"],
     }
-    ### get pie plots for summary statistics
+    # get pie plots for summary statistics
     trend_data = (
         pd.Series(trend_stats)
         .reset_index(name="value")
@@ -400,7 +400,8 @@ def make_annual_composite(collection, start_year, end_year):
 
 
 def do_polytrend(parameters):
-    """ Query GEE for data for point or polygon according to the user's request from home.html
+    """ Get user defined parameters. Make an annual image composite. Derive time series from GEE.
+        Analyze with PolyTrend. Visualize. 
 
         Called from .routes.py
     
@@ -464,14 +465,13 @@ def do_polytrend(parameters):
     except TypeError:
         print("dataset empty")
         return render_template("error.html")
-    # end of getting parameters
 
-    # make an anual composite of image collections using mean value
+    # Setp 2: make an anual composite of image collections using mean value
     annual_ndvi = make_annual_composite(collection, start_year, end_year)
 
     # Depending on whether AOI is a point or polygon get a dataset, analyze it and visualize results
     if is_polygon:
-        # Step 2: get numerical values from GEE as dataframe
+        # Step 3: get numerical values from GEE as dataframe
         try:
             dataset = get_dataset_for_polygon(
                 is_polytrend, annual_ndvi, aoi, scale, crs
@@ -481,7 +481,7 @@ def do_polytrend(parameters):
             return render_template("error.html", error_message=message)
         if save_ts_to_csv:
             dataset.to_csv("time_series.csv")
-        # Step 3: analyze data using PolyTrend algorithm
+        # Step 4: analyze data using PolyTrend algorithm
         try:
             result = call_polytrend_polygon(dataset, alpha, band_name, ndvi_threshold)
         except:
@@ -489,11 +489,11 @@ def do_polytrend(parameters):
             return render_template("error.html", error_message=message)
         if save_result_to_csv == "yes":
             result.to_csv("PolyTrend_result.csv")
-        # Step 4: visualize results
+        # Step 5: visualize results
         plots = visualize_polytrend_polygon(result)
 
     elif is_point:
-        # Step 2: get numerical values from GEE as dataframe
+        # Step 3: get numerical values from GEE as dataframe
         try:
             dataset = get_dataset_for_point(is_polytrend, annual_ndvi, aoi, scale, crs)
         except:
@@ -501,13 +501,13 @@ def do_polytrend(parameters):
             return render_template("error.html", error_message=message)
         if save_ts_to_csv == "yes":
             dataset.to_csv("time_series.csv")
-        # Step 3: analyze data using PolyTrend algorithm
+        # Step 4: analyze data using PolyTrend algorithm
         try:
             result = call_polytrend_point(dataset, alpha, band_name, ndvi_threshold)
         except:
             message = "Sorry, something went wrong inside the PolyTrend function."
             return render_template("error.html", error_message=message)
-        # Step 4: visualize results
+        # Step 5: visualize results
         plots = visualize_polytrend_point(result, name_of_collection, start_year)
 
     return plots
