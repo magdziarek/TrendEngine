@@ -21,16 +21,13 @@ calculations = Blueprint("calculations", __name__)
 
 @calculations.route("/result", methods=["GET", "POST"])
 def get_result():
-    """ Get user's input and send to do_polytrend or do_dbest"""
+    """ Get user's input and send to polytrend_func in polytrend.py"""
 
     if request.method == "POST":
-        # parameters for datasets
         parameters = request.form
 
     if parameters["isDbest"] == "yes":
         result = do_dbest(parameters)
-        print("Is dbest?", parameters["isDbest"])
     elif parameters["isPolytrend"] == "yes":
         result = do_polytrend(parameters)
-        print("is polytrend?", parameters["isPolytrend"])
     return result
