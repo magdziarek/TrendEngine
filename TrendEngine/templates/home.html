@@ -69,6 +69,49 @@
         </fieldset>
      <!-- end of dataset form fields-->
     <div id="dbestDiv" style="display: none">
+      <table>
+        <tr>
+          <th>Threshold</th>
+          <th>Description</th>
+        </tr>
+        <tr>
+          <td>First level-shift-threshold</td>
+          <td>The lowest absolute difference in (VI) data between the level-shift point and next data point</td>
+        </tr>
+        <tr>
+          <td>Duration-threshold</td>
+          <td>The lowest time period (time steps) within which the shift in the mean of the data level, before and after the level-shift
+point, persists; and, the lowest spacing (time steps) between successive level-shift points.</td>
+        </tr>
+        <tr>
+          <td>Second level-shift-threshold</td>
+          <td>The lowest absolute difference in the means of the data calculated over the period φ before and after the level-shift point</td>
+        </tr>
+        <tr>
+          <td>Distance-threshold</td>
+          <td>The lowest perpendicular distance from farthest data point to the straight line passing through every pair of successive
+peak and valley points</td>
+        </tr>
+        <tr>
+          <td>Change number</td>
+          <td>Number of major breakpoints included in the generalised trend (generalisation algorithm); number of greatest changes
+of interest for detection (change detection algorithm)</td>
+        </tr>
+        <tr>
+          <td>Change magnitude</td>
+          <td>The largest variation within a segment after generalisation (generalisation algorithm); the lowest magnitude of changes
+of interest for detection (change detection algorithm)</td>
+        </tr>
+        <tr>
+          <td>Generalisation-threshold</td>
+          <td>The highest level of trend generalisation compared to the base level (the least simplified fit derived using all detected
+breakpoints in the fitting)</td>
+        </tr>
+        <tr>
+          <td>Statistical significance level</td>
+          <td>Statistical significance level used for testing significance of detected changes</td>
+        </tr>
+      </table>
     <fieldset>
       <legend>DBEST parameters</legend>
       <input type="" id="isDbest" name="isDbest" value="yes" style="display: none"> 
