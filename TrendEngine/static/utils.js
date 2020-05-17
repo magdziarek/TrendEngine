@@ -92,12 +92,10 @@ L.tileLayer(
   {
     attribution: '&copy; ' + mapLink + ' Contributors',
     maxZoom: 15,
-    minZoom: 6
+    minZoom: 3
   }
 ).addTo(leafletMap);
-//add map controls
-var drawnItems;
-L.control.scale().addTo(leafletMap);
+
 //add drawing utilities, only marker and polygon can be drawn
 var drawnItems = new L.FeatureGroup();
 leafletMap.addLayer(drawnItems);
@@ -113,20 +111,24 @@ var drawControl = new L.Control.Draw({
     featureGroup: drawnItems
   }
 });
+//add map controls
 leafletMap.addControl(drawControl);
+L.control.scale().addTo(leafletMap);
+
 //when a marker is drawn, display its coordinates
 leafletMap.on(L.Draw.Event.CREATED, function (e) {
   let type = e.layerType,
     layer = e.layer;
   if (type === 'marker') {
-    drawnItems.addLayer(layer);
     let latLng = layer.getLatLng();
     coordinates.innerHTML = '[' + latLng.lng + ',' + latLng.lat + ']';
   }
   if (type === 'rectangle') {
-    drawnItems.addLayer(layer);
     let latLng = layer.getLatLngs()[0];
     coordinates.innerHTML = '[[[' + latLng[0].lng + ',' + latLng[0].lat + '],[' + latLng[1].lng + ',' + latLng[1].lat + '],[' +
       latLng[2].lng + ', ' + latLng[2].lat + '], [' + latLng[3].lng + ', ' + latLng[3].lat + ']]]';
-  }
+    }
+  
+  drawnItems.addLayer(layer);
+
 });  
