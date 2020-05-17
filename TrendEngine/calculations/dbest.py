@@ -106,7 +106,9 @@ def call_dbest_polygon(
         ]
         for i in range(0, number_of_pixels, n):
             Y_long = dataset[i : i + n][band_name].values
-            Y = [round(x, 3) for x in Y_long]
+            # Y = [round(x, 3) for x in Y_long]
+            Y = [round(x*0.0001, 3) for x in Y_long]
+            print(Y)
             if all(val > ndvi_threshold for val in Y):
                 vec = FloatVector(Y)
                 result = list(
@@ -143,7 +145,6 @@ def call_dbest_polygon(
                 )
             else:
                 print("!!! Unqualified value !!!")
-
 
         df = pd.DataFrame(DBEST_result[0:], columns=DBEST_result_header)
     return df
@@ -321,6 +322,7 @@ def dbest_visualize_point(result, time_steps, algorithm, data_type):
             "change_type": np.asarray(result[0][6]),
             "significance": np.asarray(result[0][7]),
         }
+        print(np.asarray(result[0]))
         # Create plots
         fit = np.ravel(result[0][8])
         data = np.asarray(result[0][9])
@@ -393,7 +395,7 @@ def dbest_visualize_point(result, time_steps, algorithm, data_type):
         f_local = np.asarray(result[0][8])
         fit = np.ravel(result[0][3])
         data = np.asarray(result[0][4])
-        print("!!!! result ", result[0])
+        print("result ", np.asarray(result[0]))
         fit_plot = figure(
             background_fill_color="lightgrey",
             height=400,
@@ -405,6 +407,8 @@ def dbest_visualize_point(result, time_steps, algorithm, data_type):
         fit_plot.line(x=time_steps, y=data, color="blue")
         fit_plot.line(x=time_steps, y=fit, color="green", line_width=2)
 
+        #fit_plot.line(x=time_steps, y=fit, color="yellow", line_width=2)
+        
         f_local_plot = figure(
             background_fill_color="lightgrey",
             height=400,
@@ -466,12 +470,12 @@ def do_dbest(parameters):
         name_of_collection = "MODIS/006/MOD13Q1"
         band_name = "NDVI"
         scale = 250
-        ndvi_threshold = 100
+        ndvi_threshold = 0.1
     elif name_of_collection == "MODIS/006/MOD13Q1_EVI":
         name_of_collection = "MODIS/006/MOD13Q1"
         band_name = "EVI"
         scale = 250
-        ndvi_threshold = 100
+        ndvi_threshold = 0.1
     coordinates = parameters["coordinates"]
     regex = re.sub("[\[\]]", "", coordinates)
     split = regex.split(",")
@@ -495,6 +499,7 @@ def do_dbest(parameters):
     img_collection = ee.ImageCollection(name_of_collection)
     crs = img_collection.first().getInfo()["bands"][0]["crs"]
     collection = img_collection.filterDate(start_date, end_date).filterBounds(aoi)
+
     save_ts_to_csv = parameters.get("save_ts_to_csv")
     save_result_to_csv = parameters.get("save_result_to_csv")
     is_polytrend = False
@@ -514,7 +519,17 @@ def do_dbest(parameters):
     years = ee.List.sequence(start_year, end_year, 1)
 
     if is_polygon:
-        
+        # if modis is used apply mask using summary quality flag
+        def apply_qa_mask(image):
+            qa = image.select('SummaryQA')
+            mask1 = (0 << 1)
+            mask2 = (0 << 2)
+            mask3 = (0 << 3)
+            mask = qa.bitwiseAnd(mask1).eq(0).And(qa.bitwiseAnd(mask2).eq(0)).And(qa.bitwiseAnd(mask3).eq(0))
+            return image.updateMask(mask).select(band_name).copyProperties(image, ["system:time_start"]) 
+        if (name_of_collection == "MODIS/006/MOD13Q1"):
+            collection = collection.select([band_name, 'SummaryQA']).map(apply_qa_mask)
+
         # Step 2: From bimonthly data create monthly data
         # Create a list of year-collection pairs (i.e. pack the function inputs)
         list_of_years_and_collections = years.zip(
