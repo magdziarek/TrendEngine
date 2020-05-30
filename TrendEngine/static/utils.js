@@ -41,8 +41,6 @@ function updateValues(collection) {
 }
 
 function validateForm() {
-  console.log('validating form');
-
   if (start.value > end.value) {
     alert("Start date must be greater than end date.");
     return false;
@@ -117,6 +115,8 @@ L.control.scale().addTo(leafletMap);
 
 //when a marker is drawn, display its coordinates
 leafletMap.on(L.Draw.Event.CREATED, function (e) {
+  drawnItems.clearLayers();
+  coordinates.innerHTML = "";
   let type = e.layerType,
     layer = e.layer;
   if (type === 'marker') {
