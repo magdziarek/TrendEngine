@@ -92,6 +92,7 @@ def visualize_polytrend_polygon(result):
     direction_stats = {
         "negative": result_to_display["count_negative"],
         "positive": result_to_display["count_positive"],
+        "no direction": "" # todo 
     }
     dir_data = (
         pd.Series(direction_stats)
@@ -99,7 +100,7 @@ def visualize_polytrend_polygon(result):
         .rename(columns={"index": "direction"})
     )
     dir_data["angle"] = dir_data["value"] / dir_data["value"].sum() * 2 * pi
-    dir_data["color"] = ["gray", "forestgreen"]
+    dir_data["color"] = ["gray", "forestgreen", "yellow"]
     direction_pie = figure(
         plot_height=350,
         title="Change direction (share in total number of pixels)",
@@ -266,8 +267,15 @@ def call_polytrend_polygon(dataset, alpha, band_name, ndvi_threshold):
             geographic coordinates, trend type, linear trend slope, direction of change, significance
 
     """
-    PT = importr("PolyTrend")
+    # PT = importr("PolyTrend")
     PT_result = []
+    PT_result_header = [
+        "geometry",
+        "trend_type",
+        "slope",
+        "direction",
+        "significance",
+    ]
     # establish how many images there are in the collection
     list_of_images = dataset["id"]
     ids_of_images = []
@@ -276,33 +284,27 @@ def call_polytrend_polygon(dataset, alpha, band_name, ndvi_threshold):
             ids_of_images.append(img_id)
 
     n = len(ids_of_images)
-    print("number of images: ", n)
+    # print("number of images: ", n)
     number_of_pixels = len(dataset)
     print("number of pixels analysed: ", number_of_pixels)
     # split the dataset into pixel time series
     for i in range(0, number_of_pixels, n):
         Y = dataset[i : i + n][band_name].values
         if all(val > ndvi_threshold for val in Y):
-            vec = FloatVector(Y)
-            result = list(PT.PolyTrend(Y=vec, alpha=alpha))
+            vec = np.array(Y).tolist()
+            _result = PolyTrend(vec, alpha)
             # populate the empty PT_result list with values
             pixel_long = dataset.at[i, "longitude"]
             pixel_lat = dataset.at[i, "latitude"]
             geometry = [pixel_long, pixel_lat]
-            PT_result_header = [
-                "geometry",
-                "trend_type",
-                "slope",
-                "direction",
-                "significance",
-            ]
+
             PT_result.append(
                 [
                     geometry,
-                    int(result[2][0]),
-                    result[3][0],
-                    int(result[4][0]),
-                    int(result[5][0]),
+                    _result["trend_type"],
+                    _result["slope"],
+                    _result["direction"],
+                    _result["significance"]
                 ]
             )
         else:
@@ -310,8 +312,8 @@ def call_polytrend_polygon(dataset, alpha, band_name, ndvi_threshold):
             pass
 
     # create a data frame for displaying results on a map
-    reduced_dataset = pd.DataFrame(PT_result[0:], columns=PT_result_header)
-    return reduced_dataset
+    result = pd.DataFrame(PT_result[0:], columns=PT_result_header)
+    return result
 
 
 def call_polytrend_point(dataset, alpha, band_name, ndvi_threshold):
@@ -324,7 +326,7 @@ def call_polytrend_point(dataset, alpha, band_name, ndvi_threshold):
             statistical significance of the fit specified by the user in home.html form
 
     Returns: 
-        reduced_dataset : dataframe
+        result : dictionary
             modified dataset containing one pixel/ point with its
             geographic coordinates, trend type, linear trend slope, direction of change, significance
 
