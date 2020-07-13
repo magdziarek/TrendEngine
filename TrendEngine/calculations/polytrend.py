@@ -199,9 +199,9 @@ def visualize_polytrend_point(result, name_of_collection, start_year):
         y_axis_range = (0, 1)
     else:
         y_axis_range = (-2000, 10000)
-    degree = int(result["degree"][0])
-    trend_type_index = int(result["trend_type"][0])
-    direction_index = int(result["direction"][0])
+    degree = result["polynomial_degree"]
+    trend_type_index = result["trend_type"]
+    direction_index = result["direction"]
     trend_type_dict = {
         -1: "concealed",
         0: "no trend",
@@ -209,15 +209,15 @@ def visualize_polytrend_point(result, name_of_collection, start_year):
         2: "cuadratic",
         3: "cubic",
     }
-    direction_dict = {-1: "negative", 1: "positive"}
+    direction_dict = {-1: "negative", 1: "positive", 0: "not linear"}
     result_to_display = {
-        "slope": round(result["slope"][0], 2),
+        "slope": round(result["slope"], 2),
         "trend": trend_type_dict[trend_type_index],
         "direction": direction_dict[direction_index],
-        "significance": result["significance"][0],
+        "significance": result["significance"],
     }
 
-    y = result["ts"][0]
+    y = result["ts"]
     no_of_years_valid = len(y)
     end_year = start_year + no_of_years_valid
     x = range(start_year, end_year)
@@ -306,7 +306,7 @@ def call_polytrend_polygon(dataset, alpha, band_name, ndvi_threshold):
                 ]
             )
         else:
-            print("!!!!!!!!!!!!!!! Unqualified value !!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            print("!!! Unqualified value !!!")
             pass
 
     # create a data frame for displaying results on a map
@@ -329,52 +329,24 @@ def call_polytrend_point(dataset, alpha, band_name, ndvi_threshold):
             geographic coordinates, trend type, linear trend slope, direction of change, significance
 
     """
-    PT_result = []
+
     Y = dataset[band_name].values
     # check if Y qualifies
     if all(val > ndvi_threshold for val in Y):
-        vec = FloatVector(Y)
+        vec = np.array(Y).tolist()
         result = PolyTrend(vec, alpha)
-        print("now change to df")
+        pixel_long = dataset.at[0, "longitude"]
+        pixel_lat = dataset.at[0, "latitude"]
+        geometry = pixel_long, pixel_lat
+        result['geometry'] = geometry
+        result['ts'] = vec
         return result
     else:
         # this will present a new screen with message that the values don't qualify
         print("Values below the threshold - probably water")
         exit()
-    # populate the empty PT_result list
-    pixel_long = dataset.at[0, "longitude"]
-    pixel_lat = dataset.at[0, "latitude"]
-    geometry = pixel_long, pixel_lat
-    PT_result_header = [
-        "geometry",
-        "ts",
-        "trend_type",
-        "slope",
-        "direction",
-        "significance",
-        "degree"
-    ]
-    print(result['trend_type'])
-    try:
-        PT_result.append(
-            [
-                geometry,
-                Y,
-                result['trend_type'],
-                result['trend_type'], #change to slope value
-                result['trend_type'], # change to direction
-                result['significance'],
-                result['polynomial_degree']
-            ]
-        )
-        print("the result: ")
-        print(PT_result)
-        # create a data frame for displaying results on a map
-        reduced_dataset = pd.DataFrame(PT_result[0:], columns=PT_result_header)
-    except ValueError:
-        print("value error")
-        reduced_dataset = "value error"
-    return reduced_dataset
+
+    return result
 
 
 def make_annual_composite(collection, start_year, end_year):
