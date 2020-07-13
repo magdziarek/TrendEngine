@@ -7,6 +7,8 @@ import scipy.stats as stats
 time_series = []
 #set desired statistical significance for the polynomial fit:
 alpha = 0.05
+Direction = 0
+Slope = 0
 
 def PolyTrend(Y, alpha):
     X = range(1, len(Y)+1)
@@ -99,7 +101,5 @@ def PolyTrend(Y, alpha):
                 Poly_degree = 0
             # return Trend_type, Significance, Poly_degree  
         # return Trend_type, Significance, Poly_degree
-    result = {'trend_type': Trend_type, 'siginificance': Significance, 'polynomial_degree': Poly_degree} 
-    print("result: ") 
-    print(result)
+    result = {'trend_type': Trend_type, 'significance': Significance, 'polynomial_degree': Poly_degree, 'direction': Direction, 'slope': Slope} 
     return result
