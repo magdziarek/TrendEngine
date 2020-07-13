@@ -43,6 +43,7 @@ def get_PT_statistics(result):
     cubic = result.loc[result['trend_type'] == 3]
     negative = result.loc[result['direction'] == -1]
     positive = result.loc[result['direction'] == 1]
+    no_direction = result.loc[result['direction'] == 0]
 
     result_to_display['count_total'] = len(result)
     result_to_display['count_linear'] = len(linear)
@@ -52,6 +53,8 @@ def get_PT_statistics(result):
     result_to_display['count_cubic'] = len(cubic)
     result_to_display['count_negative'] = len(negative)
     result_to_display['count_positive'] = len(positive)
+    result_to_display['count_no_direction'] = len(no_direction)
+
 
     count_total = result_to_display['count_total']
     result_to_display['proc_linear'] = round((result_to_display['count_linear']/count_total) * 100, 1)
@@ -61,4 +64,5 @@ def get_PT_statistics(result):
     result_to_display['proc_cubic'] = round((result_to_display['count_cubic']/count_total) * 100, 1)
     result_to_display['proc_negative'] = round((result_to_display['count_negative']/count_total) * 100, 1)
     result_to_display['proc_positive'] = round((result_to_display['count_positive']/count_total) * 100, 1)
+    result_to_display['proc_positive'] = round((result_to_display['count_no_direction']/count_total) * 100, 1)
     return result_to_display

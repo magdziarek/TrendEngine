@@ -12,9 +12,6 @@ import pandas as pd
 import geopandas as gpd
 import pandas_bokeh
 from shapely.geometry import Point
-from rpy2.robjects.packages import importr
-from rpy2.robjects.vectors import FloatVector
-import rpy2.robjects as ro
 import re
 
 # for bokeh maps and plots
@@ -92,7 +89,7 @@ def visualize_polytrend_polygon(result):
     direction_stats = {
         "negative": result_to_display["count_negative"],
         "positive": result_to_display["count_positive"],
-        "no direction": "" # todo 
+        "no direction": result_to_display["count_no_direction"]
     }
     dir_data = (
         pd.Series(direction_stats)
@@ -132,7 +129,11 @@ def visualize_polytrend_polygon(result):
     gpd_df = gpd.GeoDataFrame(result, geometry=gpd_coordinates)
     gpd_df.crs = {"init": "epsg:4326"}
     pointA = result["geometry"][0]
+    print(result["geometry"])
+    print(type(result["geometry"]))
+    print(pointA)
     pointB = result["geometry"][1]
+    print(pointB)
     buffer_size = pointA.distance(pointB) / 2
     gpd_df.geometry = gpd_df.geometry.buffer(buffer_size).envelope
     colormap_trend = ["grey", "yellow", "green", "blue", "red"]
@@ -267,7 +268,6 @@ def call_polytrend_polygon(dataset, alpha, band_name, ndvi_threshold):
             geographic coordinates, trend type, linear trend slope, direction of change, significance
 
     """
-    # PT = importr("PolyTrend")
     PT_result = []
     PT_result_header = [
         "geometry",
@@ -336,13 +336,13 @@ def call_polytrend_point(dataset, alpha, band_name, ndvi_threshold):
     # check if Y qualifies
     if all(val > ndvi_threshold for val in Y):
         vec = np.array(Y).tolist()
-        result = PolyTrend(vec, alpha)
+        _result = PolyTrend(vec, alpha)
         pixel_long = dataset.at[0, "longitude"]
         pixel_lat = dataset.at[0, "latitude"]
         geometry = pixel_long, pixel_lat
-        result['geometry'] = geometry
-        result['ts'] = vec
-        return result
+        _result['geometry'] = geometry
+        _result['ts'] = vec
+        return _result
     else:
         # this will present a new screen with message that the values don't qualify
         print("Values below the threshold - probably water")
@@ -472,7 +472,11 @@ def do_polytrend(parameters):
         if save_result_to_csv == "yes":
             result.to_csv(name_of_csv_file_result + ".csv")
         # Step 5: visualize results
-        plots = visualize_polytrend_polygon(result)
+        if result.size == 1:
+            message = "This set is only one pixel. Please use point to select area, not polygon"
+            return render_template("error.html", error_message=message)
+        else:
+            plots = visualize_polytrend_polygon(result)
 
     elif is_point:
         # Step 3: get numerical values from GEE as dataframe

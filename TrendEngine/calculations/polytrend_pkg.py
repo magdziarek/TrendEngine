@@ -101,5 +101,6 @@ def PolyTrend(Y, alpha):
                 Poly_degree = 0
             # return Trend_type, Significance, Poly_degree  
         # return Trend_type, Significance, Poly_degree
+    
     result = {'trend_type': Trend_type, 'significance': Significance, 'polynomial_degree': Poly_degree, 'direction': Direction, 'slope': Slope} 
     return result
