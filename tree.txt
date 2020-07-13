@@ -1,0 +1,43 @@
+C:.
+³   .gitattributes
+³   .gitignore
+³   LICENSE
+³   README.md
+³   run.py
+³   
+ÀÄÄÄTrendEngine
+    ³   READ.me
+    ³   __init__.py
+    ³   
+    ÃÄÄÄcalculations
+    ³      dbest.py
+    ³      polytrend.py
+    ³      routes.py
+    ³      utils.py
+    ³      __init__.py
+    ³           
+    ÃÄÄÄdocs
+    ³       requirements.txt
+    ³       set_up_with_txt.docx
+    ³       set_up_with_yml.docx
+    ³       trend-engine.yml
+    ³       Tutorial.docx
+    ³       Tutorial.pdf
+    ³       
+    ÃÄÄÄmain
+    ³      forms.py
+    ³      routes.py
+    ³      __init__.py
+    ³           
+    ÃÄÄÄstatic
+    ³       style.css
+    ³       utils.js
+    ³       
+    ÃÄÄÄtemplates
+           base.html
+           error.html
+           help.html
+           home.html
+           results_DBEST.html
+           results_polytrend.html
+            

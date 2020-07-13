@@ -7,7 +7,7 @@
     <!--Select algorithm name - grey out parameters for the other one -->
     <p>Trend Engine is a tool for describing trends and changes in vegetation over time. It relies on Google Earth Engine 
     for obtaining remote sensing time series data and the analysis is based on two available algorithms: PolyTrend and DBEST. The repository 
-    of this project can be found <a href="https://github.com/OlaMag/trend-engine">here</a>.</p>
+    of this project can be found <a href="https://github.com/magdziarek/TrendEngine">here</a>.</p>
     <h2>Select algorithm</h2>
     <h3>DBEST</h3>
     <p>A program for analyzing vegetation time series, with two algorithms: 1) change detection algorithm that detects trend changes, determines their type (abrupt or non-abrupt), and estimates their timing, magnitude, number, and direction; 2) generalization algorithm that simplifies the temporal trend into main features. The user can set the number of major breakpoints or magnitude of greatest changes of interest for detection, and can control the generalization process by setting an additional parameter of generalization-percentage.</p>
@@ -65,7 +65,8 @@
             <label for="yes">Yes</label>
             <input type="radio" name="save_ts_to_csv" value="yes" id="yes">
             <label for="no">No</label>
-            <input type="radio" name="save_ts_to_csv" value="no" id="no" checked>
+            <input type="radio" name="save_ts_to_csv" value="no" id="no">
+            <input type="text" id="name_of_csv_file_ts" value=""></input> 
         </fieldset>
      <!-- end of dataset form fields-->
     <div id="dbestDiv" style="display: none">
@@ -151,6 +152,8 @@ breakpoints in the fitting)</td>
       <input type="radio" name="save_result_to_csv" value="yes" id="yes">
       <label for="no">No</label>
       <input type="radio" name="save_result_to_csv" value="no" id="no" checked>
+      <input type="text" id="name_of_csv_file_result" value=""></input> 
+
     </fieldset>
     <input type="submit" value="Submit">
     <input type="reset" value="Reset">
@@ -168,7 +171,9 @@ breakpoints in the fitting)</td>
         <label for="yes">Yes</label>
         <input type="radio" name="save_result_to_csv" value="yes" id="yes">
         <label for="no">No</label>
-        <input type="radio" name="save_result_to_csv" value="no" id="no" checked>
+        <input type="radio" name="save_result_to_csv" value="no" id="no">
+        <input type="text" id="name_of_csv_file_result" value=""></input> 
+
       </fieldset>
       <input type="submit" value="Submit">
       <input type="reset" value="Reset">

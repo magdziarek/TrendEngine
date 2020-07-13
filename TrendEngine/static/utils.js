@@ -25,14 +25,12 @@ function setPt() {
 
 function updateValues(collection) {
   if (collection == "NASA/GIMMS/3GV0") {
-    console.log(collection);
     first_level_shift.value = 0.1;
     first_level_shift.innerHTML = 0.1;
     second_level_shift.value = 0.2;
     second_level_shift.innerHTML = 0.2;
   }
   else {
-    console.log(collection);
     first_level_shift.value = 500;
     first_level_shift.innerHTML = 500;
     second_level_shift.value = 1000;

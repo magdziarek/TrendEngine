@@ -26,6 +26,7 @@ from bokeh.layouts import layout, row
 from bokeh.embed import components
 
 # local imports
+from .polytrend_pkg import PolyTrend
 from .utils import get_dataset_for_point, get_dataset_for_polygon, get_PT_statistics
 
 try:
@@ -314,7 +315,7 @@ def call_polytrend_polygon(dataset, alpha, band_name, ndvi_threshold):
 
 
 def call_polytrend_point(dataset, alpha, band_name, ndvi_threshold):
-    """ Calls PolyTrend R package on a single geographical point
+    """ Calls PolyTrend function on a single geographical point
     
     Args:
         dataset: Pandas dataframe 
@@ -328,13 +329,14 @@ def call_polytrend_point(dataset, alpha, band_name, ndvi_threshold):
             geographic coordinates, trend type, linear trend slope, direction of change, significance
 
     """
-    PT = importr("PolyTrend")
     PT_result = []
     Y = dataset[band_name].values
     # check if Y qualifies
     if all(val > ndvi_threshold for val in Y):
         vec = FloatVector(Y)
-        result = list(PT.PolyTrend(Y=vec, alpha=alpha))
+        result = PolyTrend(vec, alpha)
+        print("now change to df")
+        return result
     else:
         # this will present a new screen with message that the values don't qualify
         print("Values below the threshold - probably water")
@@ -350,20 +352,23 @@ def call_polytrend_point(dataset, alpha, band_name, ndvi_threshold):
         "slope",
         "direction",
         "significance",
-        "degree",
+        "degree"
     ]
+    print(result['trend_type'])
     try:
         PT_result.append(
             [
                 geometry,
                 Y,
-                int(result[2][0]),
-                result[3][0],
-                int(result[4][0]),
-                int(result[5][0]),
-                int(result[6][0]),
+                result['trend_type'],
+                result['trend_type'], #change to slope value
+                result['trend_type'], # change to direction
+                result['significance'],
+                result['polynomial_degree']
             ]
         )
+        print("the result: ")
+        print(PT_result)
         # create a data frame for displaying results on a map
         reduced_dataset = pd.DataFrame(PT_result[0:], columns=PT_result_header)
     except ValueError:
@@ -458,6 +463,9 @@ def do_polytrend(parameters):
     collection = img_collection.filterDate(start_date, end_date).filterBounds(aoi)
     save_ts_to_csv = parameters.get("save_ts_to_csv")
     save_result_to_csv = parameters.get("save_result_to_csv")
+    name_of_csv_file_ts = parameters.get("name_of_csv_file_ts")
+    name_of_csv_file_result = parameters.get("name_of_csv_file_result")
+
     is_polytrend = True
     alpha = parameters.get("alpha", type=float)
     try:
@@ -480,7 +488,7 @@ def do_polytrend(parameters):
             message = "Sorry, couldn't get the data you requested. Possible problems: the dataset is too large (study area too large), study period is too long or the dataset for this period does not exist."
             return render_template("error.html", error_message=message)
         if save_ts_to_csv:
-            dataset.to_csv("time_series.csv")
+            dataset.to_csv(name_of_csv_file_ts + ".csv")
         # Step 4: analyze data using PolyTrend algorithm
         try:
             result = call_polytrend_polygon(dataset, alpha, band_name, ndvi_threshold)
@@ -488,7 +496,7 @@ def do_polytrend(parameters):
             message = "Sorry, something went wrong inside the PolyTrend function."
             return render_template("error.html", error_message=message)
         if save_result_to_csv == "yes":
-            result.to_csv("PolyTrend_result.csv")
+            result.to_csv(name_of_csv_file_result + ".csv")
         # Step 5: visualize results
         plots = visualize_polytrend_polygon(result)
 
@@ -500,7 +508,7 @@ def do_polytrend(parameters):
             message = "Sorry, couldn't get the data you requested. Possible problems: the dataset is too large (study area too large), study period is too long or the dataset for this period does not exist."
             return render_template("error.html", error_message=message)
         if save_ts_to_csv == "yes":
-            dataset.to_csv("time_series.csv")
+            dataset.to_csv(name_of_csv_file_ts)
         # Step 4: analyze data using PolyTrend algorithm
         try:
             result = call_polytrend_point(dataset, alpha, band_name, ndvi_threshold)

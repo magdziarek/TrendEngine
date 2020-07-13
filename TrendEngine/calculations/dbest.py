@@ -501,7 +501,10 @@ def do_dbest(parameters):
     collection = img_collection.filterDate(start_date, end_date).filterBounds(aoi)
 
     save_ts_to_csv = parameters.get("save_ts_to_csv")
+    name_of_csv_file_ts = parameters.get("name_of_csv_file_ts")
     save_result_to_csv = parameters.get("save_result_to_csv")
+    name_of_csv_file_result = parameters.get("name_of_csv_file_result")
+
     is_polytrend = False
 
     # get algorithm parameters for DBEST
@@ -557,7 +560,7 @@ def do_dbest(parameters):
                 ids_of_images.append(img_id)
         n = len(ids_of_images)
         if save_ts_to_csv == "yes":
-            dataset.to_csv("time_series.csv")
+            dataset.to_csv(name_of_csv_file_ts + ".csv")
 
         # Step 4: Run DBEST
         try:
@@ -581,7 +584,7 @@ def do_dbest(parameters):
             message = "Sorry, something went wrong inside DBEST function. Potential problem: your data is not cyclical."
             return render_template("error.html", error_message=message)
         if save_result_to_csv == "yes":
-            result.to_csv("DBEST_result.csv")
+            result.to_csv(name_of_csv_file_result)
 
         # Step 5: Visualize results 
         plots = dbest_visualize_polygon(result, algorithm, data_type)
@@ -633,7 +636,7 @@ def do_dbest(parameters):
             return render_template("error.html", error_message=message)
 
         if save_result_to_csv == "yes":
-            result.to_csv("DBEST_result.csv")
+            result.to_csv(name_of_csv_file_result + ".csv")
         # Step 5: Visualize results 
         plots = dbest_visualize_point(result, time_steps, algorithm, data_type)
 

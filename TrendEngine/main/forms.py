@@ -24,6 +24,8 @@ class DbestParametersForm(FlaskForm):
 
 	save_ts_to_csv = SelectField('Save time series to file (time_series.csv)', choices=[(False, 'No'), (True, 'Yes')], default=False)
 	save_result_to_csv = SelectField('Save result to file (DBEST_result.csv)', choices=[(False, 'No'), (True, 'Yes')], default=False)
+	name_of_csv_file_ts = StringField('timeseries')
+	name_of_csv_file_result = StringField('result')
 
 	submit = SubmitField('Submit')
 
@@ -41,6 +43,8 @@ class PolyTrendParametersForm(FlaskForm):
 
 	save_ts_to_csv = SelectField('Save time series to file (time_series.csv)', choices=[(False, 'No'), (True, 'Yes')], default=False)
 	save_result_to_csv = SelectField('Save result to file PolyTrend_result.csv', choices=[(False, 'No'), (True, 'Yes')], default=False)
+	name_of_csv_file_ts = StringField('timeseries')
+	name_of_csv_file_result = StringField('result')
 
 	submit = SubmitField('Submit')
 

@@ -64,7 +64,7 @@ def PolyTrend(Y, alpha):
             Trend_type = -1
             Significance = -1
             Poly_degree = 3
-            return 'trend type:', Trend_type, 'siginificance:', Significance, 'polynomial degree:', Poly_degree;
+            # return Trend_type, Significance, Poly_degree
     else:
         df2 = len(X)-3
         A2 = np.vander(X, 3)
@@ -85,7 +85,7 @@ def PolyTrend(Y, alpha):
                 Trend_type = -1
                 Significance = -1
                 Poly_degree = 2
-                return 'trend type:', Trend_type, 'siginificance:', Significance, 'polynomial degree:', Poly_degree;
+                # return Trend_type, Significance, Poly_degree
                 
         else:
             Plin = Plinear(X, Y)
@@ -97,6 +97,9 @@ def PolyTrend(Y, alpha):
                 Trend_type = 0
                 Significance = -1
                 Poly_degree = 0
-            return 'trend type:', Trend_type, 'siginificance:', Significance, 'polynomial degree:', Poly_degree;     
-        return 'trend type:', Trend_type, 'siginificance:', Significance, 'polynomial degree:', Poly_degree;
-    return
+            # return Trend_type, Significance, Poly_degree  
+        # return Trend_type, Significance, Poly_degree
+    result = {'trend_type': Trend_type, 'siginificance': Significance, 'polynomial_degree': Poly_degree} 
+    print("result: ") 
+    print(result)
+    return result
